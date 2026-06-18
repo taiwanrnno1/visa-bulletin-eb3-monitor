@@ -319,12 +319,25 @@ async function loadStatus() {
 async function loadStaticStatus() {
   const stateUrl = new URL("../visa_bulletin_state.json", window.location.href);
   stateUrl.searchParams.set("v", Date.now().toString());
-  const response = await fetch(stateUrl);
-  if (!response.ok) throw new Error(`讀取資料檔失敗：${response.status}`);
-  const current = await response.json();
+  let current;
+  try {
+    const response = await fetch(stateUrl);
+    if (!response.ok) throw new Error(`讀取資料檔失敗：${response.status}`);
+    current = await response.json();
+  } catch {
+    current = loadInitialState();
+  }
   renderState(current);
   els.noticeText.textContent = "目前是免費網頁版：可查看最新資料與儲存自己的 PD。";
   setStatus("網頁版", "idle");
+}
+
+function loadInitialState() {
+  const embedded = document.querySelector("#initialVisaState");
+  if (!embedded?.textContent) {
+    throw new Error("找不到內建公告資料。");
+  }
+  return JSON.parse(embedded.textContent);
 }
 
 async function checkNow({ notifyBrowser = true } = {}) {
