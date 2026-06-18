@@ -151,7 +151,10 @@ class MonitorHandler(SimpleHTTPRequestHandler):
             self.respond_check()
             return
         if path == "/":
-            self.path = "/web/index.html"
+            self.send_response(302)
+            self.send_header("Location", "/web/")
+            self.end_headers()
+            return
         super().do_GET()
 
     def do_POST(self) -> None:

@@ -6,6 +6,7 @@ const state = {
   timer: null,
   checking: false,
   current: null,
+  backendAvailable: true,
 };
 
 const monthMap = {
@@ -78,6 +79,7 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 async function saveDevice({ subscription = undefined } = {}) {
+  if (!state.backendAvailable) return;
   const payload = {
     deviceId: getDeviceId(),
     pd: els.pdInput.value.trim(),
@@ -96,7 +98,7 @@ async function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) {
     throw new Error("這個瀏覽器不支援背景通知。");
   }
-  return navigator.serviceWorker.register("/service-worker.js");
+  return navigator.serviceWorker.register("../service-worker.js");
 }
 
 function parseVisaDate(value) {
@@ -255,13 +257,33 @@ function notify(title, body) {
 }
 
 async function loadStatus() {
-  const response = await fetch("/api/status");
-  const payload = await response.json();
-  if (payload.ok) renderState(payload.state);
+  try {
+    const response = await fetch("/api/status");
+    if (!response.ok) throw new Error("沒有後端服務");
+    const payload = await response.json();
+    if (payload.ok) {
+      state.backendAvailable = true;
+      renderState(payload.state);
+      return;
+    }
+    throw new Error("讀取後端狀態失敗");
+  } catch {
+    state.backendAvailable = false;
+    const response = await fetch("../visa_bulletin_state.json");
+    const current = await response.json();
+    renderState(current);
+    els.noticeText.textContent = "目前是免費網頁版：可查看最新資料與儲存自己的 PD。手機通知下一步會改成免費訂閱方案。";
+    setStatus("網頁版", "idle");
+  }
 }
 
 async function checkNow({ notifyBrowser = true } = {}) {
   if (state.checking) return;
+  if (!state.backendAvailable) {
+    await loadStatus();
+    els.noticeText.textContent = "GitHub Pages 免費版無法即時執行後台檢查；最新資料會由自動流程更新到這個頁面。";
+    return;
+  }
   state.checking = true;
   els.checkNow.disabled = true;
   setStatus("檢查中", "busy");
@@ -290,6 +312,10 @@ async function checkNow({ notifyBrowser = true } = {}) {
 }
 
 async function enableNotifications() {
+  if (!state.backendAvailable) {
+    els.noticeText.textContent = "GitHub Pages 免費版不能直接送瀏覽器推播；下一步我們用免費通知頻道，朋友也能一起訂閱。";
+    return;
+  }
   if (!("Notification" in window) || !("PushManager" in window)) {
     els.noticeText.textContent = "這個瀏覽器不支援手機推播通知。";
     return;
