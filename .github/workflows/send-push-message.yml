@@ -4,18 +4,21 @@ on:
   workflow_dispatch:
     inputs:
       title:
-        description: "通知標題"
-        required: true
-        default: "🐱 好消息！EB-3 排程前進啦！喵～"
+        description: "通知標題，留空會自動使用最新公告"
+        required: false
+        default: ""
       body:
-        description: "通知內容"
-        required: true
-        default: "📅 表 A 本月最新日期：01 AUG 24\n🚀 較上個月推進 61 天（約 2.0 個月）\n📍 上個月數值：01 JUN 24\n🐾 快來看看你的優先日期是不是更接近了！"
+        description: "通知內容，留空會自動使用最新公告"
+        required: false
+        default: ""
 
 jobs:
   send:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Send browser push message
         env:
           WORKER_BROADCAST_URL: ${{ secrets.WORKER_BROADCAST_URL }}
@@ -28,6 +31,18 @@ jobs:
           import os
           import urllib.error
           import urllib.request
+          import visa_bulletin_watch as watcher
+
+          title = os.environ.get("PUSH_TITLE", "").strip()
+          body = os.environ.get("PUSH_BODY", "").strip()
+          if not title or not body:
+              with open("visa_bulletin_state.json", encoding="utf-8") as file:
+                  current = json.load(file)
+              previous_value = current.get("previous_bulletin_eb3_all_chargeability_final_action_date")
+              value = current.get("eb3_all_chargeability_final_action_date")
+              movement = watcher.describe_movement(previous_value, value)
+              title = title or watcher.build_push_title(movement)
+              body = body or watcher.build_push_message(value, previous_value, movement)
 
           url = (os.environ.get("WORKER_BROADCAST_URL") or "https://visa-bulletin-eb3-push.t6213982-32d.workers.dev/api/broadcast").strip()
           if url.endswith("/"):
@@ -39,8 +54,8 @@ jobs:
               raise SystemExit("Missing GitHub secret: WORKER_BROADCAST_SECRET")
           payload = {
               "notice": {
-                  "title": os.environ["PUSH_TITLE"],
-                  "message": os.environ["PUSH_BODY"],
+                  "title": title,
+                  "message": body,
                   "current": {},
               }
           }
