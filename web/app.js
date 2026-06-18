@@ -70,8 +70,9 @@ const els = {
   copyShareCard: document.querySelector("#copyShareCard"),
   shareStatus: document.querySelector("#shareStatus"),
   historyChart: document.querySelector("#historyChart"),
-  historyList: document.querySelector("#historyList"),
   historySummary: document.querySelector("#historySummary"),
+  historyInsight: document.querySelector("#historyInsight"),
+  historySourceLink: document.querySelector("#historySourceLink"),
 };
 
 function formatChecked(value) {
@@ -206,6 +207,9 @@ function isValidReceiptNumber(value) {
 }
 
 function caseStatusUrl(receiptNumber) {
+  if (!normalizeReceiptNumber(receiptNumber)) {
+    return "https://egov.uscis.gov/";
+  }
   const url = new URL("https://egov.uscis.gov/casestatus/mycasestatus.do");
   url.searchParams.set("appReceiptNum", normalizeReceiptNumber(receiptNumber));
   return url.toString();
@@ -281,6 +285,117 @@ function buildHistoryItems(current) {
     .sort((a, b) => (a.year - b.year) || (a.month - b.month) || (a.order - b.order));
 }
 
+function bulletinShortName(label) {
+  const match = String(label || "").match(/Visa Bulletin For ([A-Za-z]+) (\d{4})/i);
+  if (!match) return String(label || "公告月份");
+  return `${match[1].slice(0, 3)} ${match[2]}`;
+}
+
+function classifyHistoryPoint(items, index) {
+  if (index === 0) return "start";
+  const previous = parseVisaDate(items[index - 1].value);
+  const current = parseVisaDate(items[index].value);
+  const delta = daysBetween(previous, current);
+  if (delta > 0) return "advanced";
+  if (delta < 0) return "retrogressed";
+  return "same";
+}
+
+function importantHistoryIndexes(items) {
+  if (items.length <= 4) return items.map((_, index) => index);
+  const candidates = new Map();
+  const moves = [];
+  let sameRunStart = null;
+  const sameRuns = [];
+
+  const addCandidate = (index, priority) => {
+    const current = candidates.get(index);
+    if (current === undefined || priority < current) {
+      candidates.set(index, priority);
+    }
+  };
+
+  addCandidate(0, 0);
+  addCandidate(items.length - 1, 0);
+
+  for (let index = 1; index < items.length; index += 1) {
+    const delta = daysBetween(parseVisaDate(items[index - 1].value), parseVisaDate(items[index].value));
+    moves.push({ index, delta });
+
+    if (delta < 0) {
+      addCandidate(index, 1);
+    }
+
+    if (delta === 0 && sameRunStart === null) {
+      sameRunStart = index - 1;
+    }
+
+    if (delta !== 0 && sameRunStart !== null) {
+      const sameRunEnd = index - 1;
+      if (sameRunEnd - sameRunStart >= 1) {
+        sameRuns.push({
+          start: sameRunStart,
+          end: sameRunEnd,
+          next: index,
+          length: sameRunEnd - sameRunStart + 1,
+        });
+      }
+      sameRunStart = null;
+    }
+  }
+
+  if (sameRunStart !== null && items.length - 1 - sameRunStart >= 1) {
+    sameRuns.push({
+      start: sameRunStart,
+      end: items.length - 1,
+      next: items.length - 1,
+      length: items.length - sameRunStart,
+    });
+  }
+
+  moves
+    .filter((move) => move.delta !== 0)
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))
+    .slice(0, 3)
+    .forEach((move) => addCandidate(move.index, 2));
+
+  sameRuns
+    .sort((a, b) => b.length - a.length)
+    .slice(0, 2)
+    .forEach((run) => {
+      addCandidate(run.start, 3);
+      addCandidate(run.end, 4);
+      addCandidate(run.next, 3);
+    });
+
+  return [...candidates.entries()]
+    .sort((a, b) => a[1] - b[1] || a[0] - b[0])
+    .slice(0, 8)
+    .map(([index]) => index)
+    .sort((a, b) => a - b);
+}
+
+function buildHistoryInsight(items) {
+  if (items.length < 2) return "目前資料還不夠，黑咪先幫你守著下一次更新喵～";
+  let advanced = 0;
+  let same = 0;
+  let retrogressed = 0;
+  let biggestMove = { days: 0, index: 1 };
+
+  for (let i = 1; i < items.length; i += 1) {
+    const delta = daysBetween(parseVisaDate(items[i - 1].value), parseVisaDate(items[i].value));
+    if (delta > 0) advanced += 1;
+    if (delta === 0) same += 1;
+    if (delta < 0) retrogressed += 1;
+    if (Math.abs(delta) > Math.abs(biggestMove.days)) {
+      biggestMove = { days: delta, index: i };
+    }
+  }
+
+  const moveWord = biggestMove.days > 0 ? "最大前進" : "最大倒退";
+  return `近兩年共 ${items.length} 個公告月份：前進 ${advanced} 次、維持 ${same} 次、倒退 ${retrogressed} 次。${moveWord}出現在 ${bulletinShortName(items[biggestMove.index].bulletin)}，幅度 ${formatDuration(biggestMove.days)}。`;
+}
+
 function buildShareText(current) {
   if (!current) return "黑咪快報正在整理本月資料喵～";
   const movement = current.movement_from_previous_bulletin || {};
@@ -343,13 +458,13 @@ function renderProgressCard() {
 }
 
 function renderHistoryChart(current) {
-  if (!els.historyChart || !els.historyList) return;
+  if (!els.historyChart) return;
   const items = buildHistoryItems(current);
   els.historyChart.innerHTML = "";
-  els.historyList.innerHTML = "";
 
   if (items.length === 0) {
     els.historySummary.textContent = "目前還沒有可畫圖的資料";
+    els.historyInsight.textContent = "等下一次官方公告後，黑咪再幫你整理走勢喵～";
     return;
   }
 
@@ -359,7 +474,7 @@ function renderHistoryChart(current) {
   const range = Math.max(1, max - min);
   const chartWidth = 640;
   const chartHeight = 220;
-  const pad = 34;
+  const pad = 42;
   const usableWidth = chartWidth - pad * 2;
   const usableHeight = chartHeight - pad * 2;
 
@@ -382,6 +497,12 @@ function renderHistoryChart(current) {
   }
   els.historyChart.appendChild(grid);
 
+  const area = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  area.setAttribute("class", "chart-area");
+  const areaPoints = points.map((point) => `${point.x},${point.y}`).join(" L ");
+  area.setAttribute("d", `M ${points[0].x},${chartHeight - pad} L ${areaPoints} L ${points[points.length - 1].x},${chartHeight - pad} Z`);
+  els.historyChart.appendChild(area);
+
   if (points.length > 1) {
     const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
     polyline.setAttribute("class", "chart-line");
@@ -389,41 +510,38 @@ function renderHistoryChart(current) {
     els.historyChart.appendChild(polyline);
   }
 
-  const labelEvery = points.length > 12 ? 3 : 1;
+  const important = new Set(importantHistoryIndexes(items));
   points.forEach((point, index) => {
+    const kind = classifyHistoryPoint(items, index);
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    dot.setAttribute("class", "chart-dot");
+    dot.setAttribute("class", `chart-dot ${kind} ${important.has(index) ? "important" : ""}`);
     dot.setAttribute("cx", point.x);
     dot.setAttribute("cy", point.y);
-    dot.setAttribute("r", "7");
+    dot.setAttribute("r", important.has(index) ? "7" : "3.5");
     els.historyChart.appendChild(dot);
 
-    if (index % labelEvery === 0 || index === points.length - 1) {
+    if (important.has(index)) {
+      const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      group.setAttribute("class", "chart-callout");
+      const labelY = Math.max(22, point.y - 18);
       const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      label.setAttribute("class", "chart-label");
+      label.setAttribute("class", `chart-label ${kind}`);
       label.setAttribute("x", point.x);
-      label.setAttribute("y", Math.max(18, point.y - 14));
+      label.setAttribute("y", labelY);
       label.setAttribute("text-anchor", "middle");
-      label.textContent = point.value;
-      els.historyChart.appendChild(label);
+      label.textContent = `${bulletinShortName(point.bulletin)} · ${point.value}`;
+      group.appendChild(label);
+      els.historyChart.appendChild(group);
     }
   });
 
   els.historySummary.textContent = items.length > 1
     ? `近兩年共 ${items.length} 個月份`
     : "目前先顯示本月資料";
-
-  items.forEach((item) => {
-    const row = document.createElement(item.url ? "a" : "span");
-    row.className = "history-item";
-    if (item.url) {
-      row.href = item.url;
-      row.target = "_blank";
-      row.rel = "noreferrer";
-    }
-    row.textContent = `🐾 ${item.bulletin}：${item.value}`;
-    els.historyList.appendChild(row);
-  });
+  els.historyInsight.textContent = buildHistoryInsight(items);
+  if (current?.source_url) {
+    els.historySourceLink.href = "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html";
+  }
 }
 
 function buildPdMessage() {
@@ -774,15 +892,20 @@ els.caseForm?.addEventListener("submit", (event) => {
 
 els.openCaseStatus?.addEventListener("click", () => {
   const receiptNumber = normalizeReceiptNumber(els.receiptInput.value || localStorage.getItem(RECEIPT_STORAGE_KEY));
-  if (!isValidReceiptNumber(receiptNumber)) {
-    els.caseNote.textContent = "請先輸入正確的 Receipt Number，再開啟 USCIS 官方查詢。";
-    els.receiptInput.focus();
+  if (receiptNumber && !isValidReceiptNumber(receiptNumber)) {
+    els.caseNote.textContent = "Receipt Number 格式看起來不完整；黑咪先幫你開官方查詢頁，你也可以在官方頁手動輸入。";
+    window.open(caseStatusUrl(""), "_blank", "noopener,noreferrer");
     return;
   }
-  els.receiptInput.value = receiptNumber;
-  localStorage.setItem(RECEIPT_STORAGE_KEY, receiptNumber);
+
+  if (receiptNumber) {
+    els.receiptInput.value = receiptNumber;
+    localStorage.setItem(RECEIPT_STORAGE_KEY, receiptNumber);
+  }
   window.open(caseStatusUrl(receiptNumber), "_blank", "noopener,noreferrer");
-  els.caseNote.textContent = "已開啟 USCIS 官方 Case Status。若沒有自動帶入，請在官方頁貼上你本機儲存的 Receipt Number。";
+  els.caseNote.textContent = receiptNumber
+    ? "已開啟 USCIS 官方 Case Status。若沒有自動帶入，請在官方頁貼上你本機儲存的 Receipt Number。"
+    : "已開啟 USCIS 官方查詢頁。Receipt Number 是選填，需要時再讓黑咪幫你記在本機喵～";
 });
 
 els.copyShareCard?.addEventListener("click", async () => {

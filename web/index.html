@@ -140,10 +140,18 @@
           </div>
           <span id="historySummary">近兩年台灣排期走勢</span>
         </div>
+        <p class="history-intro" id="historyInsight">黑咪會把前進、倒退、停滯後突破等重要轉折點標出來，其餘月份保留在線條裡喵～</p>
         <div class="chart-wrap">
           <svg id="historyChart" viewBox="0 0 640 220" role="img" aria-label="EB-3 排期歷史走勢圖"></svg>
         </div>
-        <div class="history-list" id="historyList"></div>
+        <div class="history-footer">
+          <div class="history-legend">
+            <span><i class="legend-dot advance"></i>前進</span>
+            <span><i class="legend-dot pause"></i>停滯</span>
+            <span><i class="legend-dot retro"></i>倒退</span>
+          </div>
+          <a id="historySourceLink" class="secondary-action compact-button" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">📋 官方歷史資料</a>
+        </div>
       </section>
 
       <section class="pd-panel" aria-label="Priority Date 計算">
@@ -169,16 +177,16 @@
         <div>
           <p class="section-chip">🐾 I-140 Case 小筆記</p>
           <h2>I-140 進度查詢</h2>
-          <p>Receipt Number 只存在你的裝置。黑咪幫你開啟 USCIS 官方查詢頁，結果請以官方頁面為準喵～</p>
+          <p>不用輸入也可以直接開 USCIS 官方查詢。Receipt Number 是選填小筆記，只存在你的裝置喵～</p>
         </div>
         <form class="case-form" id="caseForm">
-          <label for="receiptInput">Receipt Number</label>
+          <label for="receiptInput">Receipt Number 選填</label>
           <div class="case-row">
             <input id="receiptInput" name="receiptInput" placeholder="例如 EAC1234567890" autocomplete="off" />
             <button id="saveReceipt" type="submit">🐾 儲存</button>
             <button id="openCaseStatus" class="secondary-action" type="button">🐱 開啟 USCIS 官方查詢</button>
           </div>
-          <p class="privacy-note" id="caseNote">Receipt Number 只儲存在你的瀏覽器本機；黑咪快報不會上傳或保存。</p>
+          <p class="privacy-note" id="caseNote">可以不輸入直接開官方頁；若想下次少打一點，再選擇儲存在本機。</p>
         </form>
       </section>
 
