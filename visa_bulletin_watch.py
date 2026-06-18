@@ -261,6 +261,11 @@ def previous_bulletin_link(links: Iterable[BulletinLink], latest: BulletinLink) 
     return None
 
 
+def recent_bulletin_links(links: Iterable[BulletinLink], limit: int = 24) -> list[BulletinLink]:
+    ordered = sorted(links, key=lambda item: (item.year, item.month), reverse=True)
+    return sorted(ordered[:limit], key=lambda item: (item.year, item.month))
+
+
 def html_to_text(html: str) -> str:
     parser = TextParser()
     parser.feed(html)
@@ -433,6 +438,23 @@ def fetch_current_result(state_path: Path) -> tuple[dict[str, object], dict[str,
         previous_month_label = previous_bulletin.label
         previous_month_url = previous_bulletin.url
 
+    history: list[dict[str, object]] = []
+    for item in recent_bulletin_links(links):
+        try:
+            item_html = bulletin_html if item.url == latest.url else fetch(item.url)
+            item_value = extract_eb3_all_chargeability(html_to_text(item_html))
+        except Exception:
+            continue
+        history.append(
+            {
+                "bulletin": item.label,
+                "source_url": item.url,
+                "eb3_all_chargeability_final_action_date": item_value,
+                "year": item.year,
+                "month": item.month,
+            }
+        )
+
     current = {
         "checked_at": checked_at,
         "bulletin": latest.label,
@@ -441,6 +463,7 @@ def fetch_current_result(state_path: Path) -> tuple[dict[str, object], dict[str,
         "previous_bulletin": previous_month_label,
         "previous_bulletin_source_url": previous_month_url,
         "previous_bulletin_eb3_all_chargeability_final_action_date": previous_month_value,
+        "history": history,
     }
     current["movement_from_previous_bulletin"] = describe_movement(
         previous_month_value,

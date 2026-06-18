@@ -112,6 +112,7 @@
           <h2>黑咪陪你量距離</h2>
           <div class="progress-track" aria-hidden="true">
             <span id="waitProgressFill"></span>
+            <img id="progressCat" src="../assets/heimi-face-modal.png" alt="" />
           </div>
           <div class="progress-stats">
             <span id="waitedDays">已等待：--</span>
@@ -135,9 +136,9 @@
         <div class="tool-head">
           <div>
             <p class="section-chip">📈 排期歷史圖表</p>
-            <h2>EB-3 表 A 其餘國家走勢</h2>
+            <h2>EB-3 表 A 台灣排期近兩年走勢</h2>
           </div>
-          <span id="historySummary">黑咪正在整理線圖喵～</span>
+          <span id="historySummary">近兩年台灣排期走勢</span>
         </div>
         <div class="chart-wrap">
           <svg id="historyChart" viewBox="0 0 640 220" role="img" aria-label="EB-3 排期歷史走勢圖"></svg>
@@ -238,19 +239,189 @@
 
     <script id="initialVisaState" type="application/json">
       {
-        "bulletin": "Visa Bulletin For July 2026",
-        "checked_at": "2026-06-18T04:47:54+00:00",
-        "eb3_all_chargeability_final_action_date": "01AUG24",
-        "movement_from_previous_bulletin": {
-          "days": 61,
-          "kind": "advanced",
-          "label": "前進 61 天，約 2.0 個月",
-          "months": 2.0
-        },
-        "previous_bulletin": "Visa Bulletin For June 2026",
-        "previous_bulletin_eb3_all_chargeability_final_action_date": "01JUN24",
-        "previous_bulletin_source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-june-2026.html",
-        "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-july-2026.html"
+              "checked_at": "2026-06-18T09:42:39+00:00",
+              "bulletin": "Visa Bulletin For July 2026",
+              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-july-2026.html",
+              "eb3_all_chargeability_final_action_date": "01AUG24",
+              "previous_bulletin": "Visa Bulletin For June 2026",
+              "previous_bulletin_source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-june-2026.html",
+              "previous_bulletin_eb3_all_chargeability_final_action_date": "01JUN24",
+              "history": [
+                      {
+                              "bulletin": "Visa Bulletin For August 2024",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2024/visa-bulletin-for-august-2024.html",
+                              "eb3_all_chargeability_final_action_date": "01DEC21",
+                              "year": 2024,
+                              "month": 8
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For September 2024",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2024/visa-bulletin-for-september-2024.html",
+                              "eb3_all_chargeability_final_action_date": "01DEC20",
+                              "year": 2024,
+                              "month": 9
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For October 2024",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-october-2024.html",
+                              "eb3_all_chargeability_final_action_date": "15NOV22",
+                              "year": 2024,
+                              "month": 10
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For November 2024",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-november-2024.html",
+                              "eb3_all_chargeability_final_action_date": "15NOV22",
+                              "year": 2024,
+                              "month": 11
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For December 2024",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-december-2024.html",
+                              "eb3_all_chargeability_final_action_date": "15NOV22",
+                              "year": 2024,
+                              "month": 12
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For January 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-january-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01DEC22",
+                              "year": 2025,
+                              "month": 1
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For February 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-february-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01DEC22",
+                              "year": 2025,
+                              "month": 2
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For March 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-march-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01DEC22",
+                              "year": 2025,
+                              "month": 3
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For April 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-april-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01JAN23",
+                              "year": 2025,
+                              "month": 4
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For May 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-may-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01JAN23",
+                              "year": 2025,
+                              "month": 5
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For June 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-june-2025.html",
+                              "eb3_all_chargeability_final_action_date": "08FEB23",
+                              "year": 2025,
+                              "month": 6
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For July 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-july-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01APR23",
+                              "year": 2025,
+                              "month": 7
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For August 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-august-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01APR23",
+                              "year": 2025,
+                              "month": 8
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For September 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-september-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01APR23",
+                              "year": 2025,
+                              "month": 9
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For October 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-october-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01APR23",
+                              "year": 2025,
+                              "month": 10
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For November 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-november-2025.html",
+                              "eb3_all_chargeability_final_action_date": "01APR23",
+                              "year": 2025,
+                              "month": 11
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For December 2025",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-december-2025.html",
+                              "eb3_all_chargeability_final_action_date": "15APR23",
+                              "year": 2025,
+                              "month": 12
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For January 2026",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-january-2026.html",
+                              "eb3_all_chargeability_final_action_date": "22APR23",
+                              "year": 2026,
+                              "month": 1
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For February 2026",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-february-2026.html",
+                              "eb3_all_chargeability_final_action_date": "01JUN23",
+                              "year": 2026,
+                              "month": 2
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For March 2026",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-march-2026.html",
+                              "eb3_all_chargeability_final_action_date": "01OCT23",
+                              "year": 2026,
+                              "month": 3
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For April 2026",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-april-2026.html",
+                              "eb3_all_chargeability_final_action_date": "01JUN24",
+                              "year": 2026,
+                              "month": 4
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For May 2026",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-may-2026.html",
+                              "eb3_all_chargeability_final_action_date": "01JUN24",
+                              "year": 2026,
+                              "month": 5
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For June 2026",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-june-2026.html",
+                              "eb3_all_chargeability_final_action_date": "01JUN24",
+                              "year": 2026,
+                              "month": 6
+                      },
+                      {
+                              "bulletin": "Visa Bulletin For July 2026",
+                              "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-july-2026.html",
+                              "eb3_all_chargeability_final_action_date": "01AUG24",
+                              "year": 2026,
+                              "month": 7
+                      }
+              ],
+              "movement_from_previous_bulletin": {
+                      "kind": "advanced",
+                      "label": "前進 61 天，約 2.0 個月",
+                      "days": 61,
+                      "months": 2.0
+              }
       }
     </script>
     <script src="app.js"></script>

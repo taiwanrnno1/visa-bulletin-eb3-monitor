@@ -62,6 +62,7 @@ const els = {
   caseNote: document.querySelector("#caseNote"),
   progressBadge: document.querySelector("#progressBadge"),
   waitProgressFill: document.querySelector("#waitProgressFill"),
+  progressCat: document.querySelector("#progressCat"),
   waitedDays: document.querySelector("#waitedDays"),
   gapDays: document.querySelector("#gapDays"),
   progressText: document.querySelector("#progressText"),
@@ -235,13 +236,16 @@ function getTodayUtc() {
 function buildHistoryItems(current) {
   const items = [];
   if (Array.isArray(current?.history)) {
-    current.history.forEach((item) => {
+    current.history.forEach((item, index) => {
       const dateText = item.eb3_all_chargeability_final_action_date || item.value;
       if (parseVisaDate(dateText)) {
         items.push({
           bulletin: item.bulletin || item.label || "Visa Bulletin",
           value: dateText,
           url: item.source_url || item.url || "",
+          year: Number(item.year) || 0,
+          month: Number(item.month) || 0,
+          order: index,
         });
       }
     });
@@ -252,6 +256,9 @@ function buildHistoryItems(current) {
       bulletin: current.previous_bulletin || "上個月",
       value: current.previous_bulletin_eb3_all_chargeability_final_action_date,
       url: current.previous_bulletin_source_url || "",
+      year: 0,
+      month: 0,
+      order: 0,
     });
   }
 
@@ -262,13 +269,16 @@ function buildHistoryItems(current) {
         bulletin: current.bulletin || "本月",
         value: current.eb3_all_chargeability_final_action_date,
         url: current.source_url || "",
+        year: 9999,
+        month: 99,
+        order: 1,
       });
     }
   }
 
   return items
     .filter((item) => parseVisaDate(item.value))
-    .sort((a, b) => parseVisaDate(a.value) - parseVisaDate(b.value));
+    .sort((a, b) => (a.year - b.year) || (a.month - b.month) || (a.order - b.order));
 }
 
 function buildShareText(current) {
@@ -303,6 +313,7 @@ function renderProgressCard() {
   if (!pdDate || !cutoffDate) {
     els.progressBadge.textContent = "尚未輸入 PD";
     els.waitProgressFill.style.width = "8%";
+    els.progressCat.style.left = "8%";
     els.waitedDays.textContent = "已等待：--";
     els.gapDays.textContent = "距離本月：--";
     els.progressText.textContent = "輸入 Priority Date 後，黑咪會幫你估算等待時間與離本月公布日期還差多久喵～";
@@ -314,6 +325,7 @@ function renderProgressCard() {
   if (diffToCutoff <= 0) {
     els.progressBadge.textContent = "本月已到或已超過";
     els.waitProgressFill.style.width = "100%";
+    els.progressCat.style.left = "96%";
     els.waitedDays.textContent = `已等待：${formatDuration(waited)}`;
     els.gapDays.textContent = "距離本月：已到達";
     els.progressText.textContent = "黑咪敲碗！你的 Priority Date 已經早於或等於本月公布日期，請搭配官方指引與律師確認下一步喵～";
@@ -324,6 +336,7 @@ function renderProgressCard() {
   const percent = Math.max(6, Math.min(96, Math.round((waited / roughTotal) * 100)));
   els.progressBadge.textContent = `${percent}% 旅程感`;
   els.waitProgressFill.style.width = `${percent}%`;
+  els.progressCat.style.left = `${percent}%`;
   els.waitedDays.textContent = `已等待：約 ${formatDuration(waited)}`;
   els.gapDays.textContent = `距離本月：${formatDuration(diffToCutoff)}`;
   els.progressText.textContent = "這是黑咪用目前公布日期估算的等待旅程感，不是官方預測；但很適合每月追蹤自己的距離喵～";
@@ -376,7 +389,8 @@ function renderHistoryChart(current) {
     els.historyChart.appendChild(polyline);
   }
 
-  points.forEach((point) => {
+  const labelEvery = points.length > 12 ? 3 : 1;
+  points.forEach((point, index) => {
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     dot.setAttribute("class", "chart-dot");
     dot.setAttribute("cx", point.x);
@@ -384,17 +398,19 @@ function renderHistoryChart(current) {
     dot.setAttribute("r", "7");
     els.historyChart.appendChild(dot);
 
-    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-    label.setAttribute("class", "chart-label");
-    label.setAttribute("x", point.x);
-    label.setAttribute("y", Math.max(18, point.y - 14));
-    label.setAttribute("text-anchor", "middle");
-    label.textContent = point.value;
-    els.historyChart.appendChild(label);
+    if (index % labelEvery === 0 || index === points.length - 1) {
+      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      label.setAttribute("class", "chart-label");
+      label.setAttribute("x", point.x);
+      label.setAttribute("y", Math.max(18, point.y - 14));
+      label.setAttribute("text-anchor", "middle");
+      label.textContent = point.value;
+      els.historyChart.appendChild(label);
+    }
   });
 
   els.historySummary.textContent = items.length > 1
-    ? `目前整理 ${items.length} 個月份`
+    ? `近兩年共 ${items.length} 個月份`
     : "目前先顯示本月資料";
 
   items.forEach((item) => {
