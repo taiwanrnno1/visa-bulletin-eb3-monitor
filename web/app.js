@@ -530,7 +530,7 @@ function renderHistoryChart(current) {
   const range = Math.max(1, max - min);
   const chartWidth = 640;
   const chartHeight = 220;
-  const pad = 42;
+  const pad = 64;
   const usableWidth = chartWidth - pad * 2;
   const usableHeight = chartHeight - pad * 2;
 
@@ -568,7 +568,8 @@ function renderHistoryChart(current) {
 
   const importantIndexes = importantHistoryIndexes(items);
   const important = new Set(importantIndexes);
-  const labelTracks = [22, 44, chartHeight - 34, chartHeight - 12];
+  const topLabelTracks = [20, 40];
+  const bottomLabelTracks = [chartHeight - 10, chartHeight - 32];
   const placedLabels = [];
   const labelGap = 96;
   points.forEach((point, index) => {
@@ -582,9 +583,12 @@ function renderHistoryChart(current) {
 
     if (important.has(index)) {
       const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      const trackY = labelTracks.find((track) => (
+      const preferredTracks = point.y > chartHeight / 2
+        ? bottomLabelTracks.concat(topLabelTracks)
+        : topLabelTracks.concat(bottomLabelTracks);
+      const trackY = preferredTracks.find((track) => (
         placedLabels.every((placed) => placed.y !== track || Math.abs(placed.x - point.x) > labelGap)
-      )) || labelTracks[index % labelTracks.length];
+      )) || preferredTracks[index % preferredTracks.length];
       placedLabels.push({ x: point.x, y: trackY });
       label.setAttribute("class", `chart-label ${kind}`);
       label.setAttribute("x", point.x);

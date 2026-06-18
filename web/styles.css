@@ -191,14 +191,16 @@ body[data-mood="retrogressed"] {
 }
 
 .hemi-landing {
-  --landing-x: 440px;
-  --landing-y: -104px;
-  position: relative;
-  flex: 0 0 auto;
-  width: 188px;
-  height: 132px;
+  --landing-x: 620px;
+  --landing-y: -118px;
+  pointer-events: none;
+  position: absolute;
+  left: -18px;
+  top: -38px;
+  width: 210px;
+  height: 142px;
   overflow: visible;
-  isolation: isolate;
+  z-index: 0;
 }
 
 .hemi-landing::before {
@@ -215,7 +217,7 @@ body[data-mood="retrogressed"] {
   transform: perspective(260px) rotateX(58deg) rotateZ(-13deg);
   transform-origin: center bottom;
   box-shadow: 0 18px 28px rgba(36, 93, 115, 0.12);
-  opacity: 0.82;
+  opacity: 0.42;
   z-index: -2;
 }
 
@@ -234,18 +236,18 @@ body[data-mood="retrogressed"] {
 .nurse-badge {
   position: relative;
   display: block;
-  width: 188px;
-  height: 132px;
+  width: 210px;
+  height: 142px;
   object-fit: contain;
   object-position: center;
-  filter: drop-shadow(0 16px 18px rgba(24, 30, 35, 0.16));
+  filter: drop-shadow(0 16px 18px rgba(24, 30, 35, 0.12));
   animation: hemi-landing 13s cubic-bezier(0.24, 0.72, 0.22, 1) infinite;
   will-change: transform, opacity;
 }
 
 @keyframes hemi-landing {
   0% {
-    opacity: 0;
+    opacity: 1;
     transform: translate(var(--landing-x), var(--landing-y)) rotate(-13deg) scale(0.56);
   }
 
@@ -260,7 +262,7 @@ body[data-mood="retrogressed"] {
   }
 
   100% {
-    opacity: 0;
+    opacity: 1;
     transform: translate(-18px, 16px) rotate(2deg) scale(0.98);
   }
 }
@@ -316,6 +318,8 @@ h2 {
 }
 
 h1 {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   width: fit-content;
@@ -339,13 +343,19 @@ h1::after {
 }
 
 .title-row {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: end;
   flex-wrap: wrap;
   gap: 8px 14px;
+  min-height: 132px;
+  padding: 58px 0 4px 104px;
 }
 
 .byline {
+  position: relative;
+  z-index: 2;
   display: grid;
   gap: 2px;
   max-width: 520px;
@@ -1688,10 +1698,12 @@ pre {
   }
 
   .hemi-landing {
-    --landing-x: 170px;
-    --landing-y: -78px;
-    width: 144px;
-    height: 102px;
+    --landing-x: 220px;
+    --landing-y: -70px;
+    left: -10px;
+    top: -20px;
+    width: 150px;
+    height: 104px;
   }
 
   .hemi-landing::before {
@@ -1700,8 +1712,13 @@ pre {
   }
 
   .nurse-badge {
-    width: 144px;
-    height: 102px;
+    width: 150px;
+    height: 104px;
+  }
+
+  .title-row {
+    min-height: 112px;
+    padding: 44px 0 4px 76px;
   }
 
   .top-actions,
