@@ -10,7 +10,7 @@ on:
       body:
         description: "通知內容"
         required: true
-        default: "EB-3 表Ａ 其餘國家 本月公布日期：01 AUG 24\n相較上個月：前進 61 天，約 2.0 個月\n上個月數值：01JUN24"
+        default: "表Ａ 本月最新日期為 01 AUG 24\n相較上個月 前進 61 天，約 2.0 個月\n上個月數值：01 JUN 24"
 
 jobs:
   send:

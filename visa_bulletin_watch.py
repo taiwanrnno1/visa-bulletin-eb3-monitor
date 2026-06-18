@@ -325,11 +325,11 @@ def build_notice(
 
     if new_bulletin:
         lines = [
-            f"EB-3 表Ａ 其餘國家 本月公布日期：{format_notice_date(value)}",
-            f"相較上個月：{movement['label']}",
+            f"表Ａ 本月最新日期為 {format_notice_date(value)}",
+            f"相較上個月 {movement['label']}",
         ]
         if previous_month_value is not None and previous_month_value != value:
-            lines.append(f"上個月數值：{previous_month_value}")
+            lines.append(f"上個月數值：{format_notice_date(previous_month_value)}")
         return {
             "status": "new_bulletin",
             "notify": True,
@@ -343,9 +343,9 @@ def build_notice(
     if value_changed:
         old_display = previous_month_value if previous_month_value is not None else "沒有上個月數值"
         lines = [
-            f"EB-3 表Ａ 其餘國家 本月公布日期：{format_notice_date(value)}",
-            f"相較上個月：{movement['label']}",
-            f"上個月數值：{old_display}",
+            f"表Ａ 本月最新日期為 {format_notice_date(value)}",
+            f"相較上個月 {movement['label']}",
+            f"上個月數值：{format_notice_date(old_display)}",
         ]
         return {
             "status": "value_changed",
