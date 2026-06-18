@@ -4,3 +4,5 @@ __pycache__/
 .pycache/
 .env
 worker/node_modules/
+.DS_Store
+worker/.DS_Store

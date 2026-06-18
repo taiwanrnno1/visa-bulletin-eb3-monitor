@@ -872,6 +872,25 @@ pre {
   max-width: 560px;
 }
 
+.pd-modal-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pd-modal-heading h2 {
+  flex: 1 1 auto;
+}
+
+.pd-modal-heading img {
+  flex: 0 0 auto;
+  width: 72px;
+  height: 72px;
+  border-radius: 22px;
+  object-fit: cover;
+  box-shadow: var(--small-shadow);
+}
+
 .pd-modal-text {
   margin-top: 14px;
   border: 1px solid rgba(47, 143, 167, 0.16);

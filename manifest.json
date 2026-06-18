@@ -9,7 +9,7 @@
   "theme_color": "#2f8fa7",
   "icons": [
     {
-      "src": "assets/heimi-app-icon.png",
+      "src": "assets/heimi-face-app-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
