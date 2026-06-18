@@ -223,6 +223,8 @@ h1 {
 }
 
 .byline {
+  display: grid;
+  gap: 2px;
   max-width: 520px;
   margin: 0 0 6px;
   color: #53677e;
