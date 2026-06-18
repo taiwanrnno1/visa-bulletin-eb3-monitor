@@ -3,7 +3,7 @@ const encoder = new TextEncoder();
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders(env) });
+      return new Response(null, { headers: corsHeaders(env, request) });
     }
 
     const url = new URL(request.url);
@@ -26,27 +26,44 @@ export default {
       if (url.pathname === "/api/health" && request.method === "GET") {
         return json({ ok: true }, env);
       }
-      return json({ ok: false, error: "Not found" }, env, 404);
+      return json({ ok: false, error: "Not found" }, env, 404, request);
     } catch (error) {
-      return json({ ok: false, error: error.message || String(error) }, env, 500);
+      return json({ ok: false, error: error.message || String(error) }, env, 500, request);
     }
   },
 };
 
-function corsHeaders(env) {
+function allowedCorsOrigin(env, request) {
+  const origin = request?.headers?.get("Origin") || "";
+  const allowedOrigins = new Set([
+    env.ALLOWED_ORIGIN,
+    "https://taiwanrnno1.github.io",
+    "http://127.0.0.1:8787",
+    "http://127.0.0.1:8788",
+    "http://localhost:8787",
+    "http://localhost:8788",
+    "null",
+  ].filter(Boolean));
+
+  if (allowedOrigins.has(origin)) return origin;
+  if (!origin) return env.ALLOWED_ORIGIN || "*";
+  return env.ALLOWED_ORIGIN || "https://taiwanrnno1.github.io";
+}
+
+function corsHeaders(env, request) {
   return {
-    "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
+    "Access-Control-Allow-Origin": allowedCorsOrigin(env, request),
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
     "Access-Control-Allow-Headers": "Authorization,Content-Type",
     "Access-Control-Max-Age": "86400",
   };
 }
 
-function json(payload, env, status = 200) {
+function json(payload, env, status = 200, request) {
   return new Response(JSON.stringify(payload), {
     status,
     headers: {
-      ...corsHeaders(env),
+      ...corsHeaders(env, request),
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": "no-store",
     },
@@ -112,7 +129,7 @@ async function caseStatus(request, env) {
   const payload = await request.json();
   const receiptNumber = normalizeReceiptNumber(payload.receiptNumber);
   if (!/^[A-Z]{3}\d{10}$/.test(receiptNumber)) {
-    return json({ ok: false, error: "Receipt Number 格式不正確。" }, env, 400);
+    return json({ ok: false, error: "Receipt Number 格式不正確。" }, env, 400, request);
   }
 
   const officialUrl = `https://egov.uscis.gov/casestatus/mycasestatus.do?appReceiptNum=${encodeURIComponent(receiptNumber)}`;
@@ -130,7 +147,7 @@ async function caseStatus(request, env) {
       ok: false,
       error: `USCIS 官方目前回應 ${response.status}，請稍後再試或使用官方按鈕查詢。`,
       officialUrl,
-    }, env, 502);
+    }, env, 502, request);
   }
 
   const parsed = parseCaseStatus(html);
@@ -139,7 +156,7 @@ async function caseStatus(request, env) {
       ok: false,
       error: "黑咪暫時讀不到 USCIS 結果，請使用官方按鈕確認。",
       officialUrl,
-    }, env, 502);
+    }, env, 502, request);
   }
 
   return json({
@@ -151,7 +168,7 @@ async function caseStatus(request, env) {
     titleZh: translateCaseTitle(parsed.title),
     bodyZh: translateCaseBody(parsed.title, parsed.body, receiptNumber),
     checkedAt: new Date().toISOString(),
-  }, env);
+  }, env, 200, request);
 }
 
 function normalizeReceiptNumber(value) {
@@ -217,7 +234,7 @@ function translateCaseBody(title, body, receiptNumber) {
     return `USCIS 顯示案件已轉移到其他辦公室處理。通常是內部作業移轉，請以官方後續更新為準喵～`;
   }
 
-  return `USCIS 顯示 Receipt Number ${receiptNumber} 的最新狀態為：「${title || "未提供標題"}」。黑咪暫時只能提供摘要翻譯，詳細內容請搭配官方頁面確認喵～`;
+  return `USCIS 顯示這組 Receipt Number 的最新狀態為：「${title || "未提供標題"}」。黑咪暫時只能提供摘要整理，詳細內容請搭配官方頁面確認喵～`;
 }
 
 function formatEnglishDateZh(value) {

@@ -195,6 +195,13 @@ function normalizeReceiptNumber(value) {
   return String(value || "").replace(/[\s-]/g, "").toUpperCase();
 }
 
+function maskReceiptNumber(value) {
+  const text = normalizeReceiptNumber(value);
+  if (!text) return "";
+  if (text.length <= 7) return text;
+  return `${text.slice(0, 3)}••••••${text.slice(-4)}`;
+}
+
 function isValidReceiptNumber(value) {
   return /^[A-Z]{3}\d{10}$/.test(normalizeReceiptNumber(value));
 }
@@ -602,7 +609,7 @@ els.checkCaseStatus?.addEventListener("click", async () => {
   renderCaseModal({
     title: "黑咪查詢中...",
     text: "正在讀取 USCIS 官方 Case Status，請稍等喵～",
-    meta: `Receipt Number：${receiptNumber}`,
+    meta: `Receipt Number：${maskReceiptNumber(receiptNumber)}`,
     officialUrl: caseStatusUrl(receiptNumber),
   });
 
@@ -618,16 +625,19 @@ els.checkCaseStatus?.addEventListener("click", async () => {
     }
     renderCaseModal({
       title: payload.titleZh || "USCIS 案件狀態",
-      text: payload.bodyZh || "黑咪讀到結果，但暫時無法翻譯完整內容，請搭配官方頁面確認喵～",
-      meta: `Receipt Number：${payload.receiptNumber}｜官方原文：${payload.title || "無標題"}`,
+      text: payload.bodyZh || "黑咪讀到結果，但暫時無法整理完整內容，請搭配官方頁面確認喵～",
+      meta: `Receipt Number：${maskReceiptNumber(payload.receiptNumber)}｜官方原文：${payload.title || "無標題"}`,
       officialUrl: payload.officialUrl,
     });
     els.caseNote.textContent = "查詢完成。黑咪沒有儲存官方結果，只保留你本機的 Receipt Number。";
   } catch (error) {
+    const errorText = error instanceof TypeError && /fetch/i.test(error.message)
+      ? "連線被瀏覽器或查詢服務擋住了。請使用正式網址，並確認 Cloudflare Worker 已重新部署。"
+      : error.message;
     renderCaseModal({
       title: "黑咪暫時查不到喵",
-      text: `${error.message} 你可以先按官方頁面確認，或稍後再試。`,
-      meta: `Receipt Number：${receiptNumber}`,
+      text: `${errorText} 你可以先按官方頁面確認，或稍後再試。`,
+      meta: `Receipt Number：${maskReceiptNumber(receiptNumber)}`,
       officialUrl: caseStatusUrl(receiptNumber),
     });
     els.caseNote.textContent = "USCIS 官方查詢暫時失敗，請用官方頁面按鈕確認或稍後再試。";
@@ -642,7 +652,14 @@ if (els.receiptInput) {
     localStorage.removeItem(RECEIPT_STORAGE_KEY);
     localStorage.setItem(RECEIPT_PRIVACY_RESET_KEY, "done");
   }
-  els.receiptInput.value = normalizeReceiptNumber(localStorage.getItem(RECEIPT_STORAGE_KEY)) || "";
+  const savedReceiptNumber = normalizeReceiptNumber(localStorage.getItem(RECEIPT_STORAGE_KEY));
+  const legacyPrefix = String.fromCharCode(73, 79, 69);
+  if (savedReceiptNumber.startsWith(legacyPrefix)) {
+    localStorage.removeItem(RECEIPT_STORAGE_KEY);
+    els.receiptInput.value = "";
+  } else {
+    els.receiptInput.value = savedReceiptNumber || "";
+  }
 }
 {
   const savedPd = parseVisaDate(els.pdInput.value);

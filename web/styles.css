@@ -192,8 +192,8 @@ body[data-mood="retrogressed"] {
 
 .nurse-badge {
   flex: 0 0 auto;
-  width: 136px;
-  height: 168px;
+  width: 148px;
+  height: 182px;
   object-fit: contain;
   object-position: center;
   filter: drop-shadow(0 16px 18px rgba(24, 30, 35, 0.16));
@@ -240,7 +240,7 @@ h1 {
   background: rgba(255, 255, 255, 0.72);
   padding: 8px 14px;
   color: #17364b;
-  font-size: clamp(18px, 2.35vw, 28px);
+  font-size: clamp(18px, 2.55vw, 30px);
   line-height: 1.08;
   white-space: nowrap;
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85);
@@ -768,10 +768,24 @@ body[data-mood="retrogressed"] .brady-strip path {
 }
 
 .case-panel {
-  grid-template-columns: 0.82fr 1.38fr;
+  grid-template-columns: 0.76fr 1.24fr;
   background:
     radial-gradient(circle at 96% 18%, rgba(255, 229, 236, 0.7), transparent 28%),
     rgba(255, 255, 255, 0.88);
+  align-items: center;
+  gap: 24px;
+  padding: 26px;
+}
+
+.case-panel h2 {
+  font-size: clamp(25px, 3vw, 34px);
+}
+
+.case-panel p:not(.section-chip) {
+  max-width: 420px;
+  margin-bottom: 0;
+  font-size: 16px;
+  line-height: 1.65;
 }
 
 .pd-panel::after,
@@ -817,7 +831,8 @@ body[data-mood="retrogressed"] .brady-strip path {
 }
 
 .case-row {
-  grid-template-columns: minmax(220px, 1fr) auto auto auto;
+  grid-template-columns: minmax(260px, 1fr) auto auto auto;
+  align-items: center;
 }
 
 .privacy-note {
@@ -956,7 +971,7 @@ button:disabled {
 }
 
 .case-dialog {
-  max-width: 640px;
+  max-width: 680px;
 }
 
 .case-result-box {
