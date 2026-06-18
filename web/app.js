@@ -72,6 +72,7 @@ const els = {
   historyChart: document.querySelector("#historyChart"),
   historySummary: document.querySelector("#historySummary"),
   historyInsight: document.querySelector("#historyInsight"),
+  historyHighlights: document.querySelector("#historyHighlights"),
   historySourceLink: document.querySelector("#historySourceLink"),
 };
 
@@ -392,8 +393,62 @@ function buildHistoryInsight(items) {
     }
   }
 
-  const moveWord = biggestMove.days > 0 ? "最大前進" : "最大倒退";
-  return `近兩年共 ${items.length} 個公告月份：前進 ${advanced} 次、維持 ${same} 次、倒退 ${retrogressed} 次。${moveWord}出現在 ${bulletinShortName(items[biggestMove.index].bulletin)}，幅度 ${formatDuration(biggestMove.days)}。`;
+  return `近兩年：前進 ${advanced} 次、維持 ${same} 次、倒退 ${retrogressed} 次。重點轉折看下面小卡喵～`;
+}
+
+function buildHistoryHighlights(items) {
+  if (items.length < 2) return [];
+  const moves = [];
+  let sameRunStart = null;
+  const sameRuns = [];
+
+  for (let index = 1; index < items.length; index += 1) {
+    const delta = daysBetween(parseVisaDate(items[index - 1].value), parseVisaDate(items[index].value));
+    moves.push({ index, delta });
+    if (delta === 0 && sameRunStart === null) sameRunStart = index - 1;
+    if (delta !== 0 && sameRunStart !== null) {
+      sameRuns.push({ start: sameRunStart, end: index - 1, length: index - sameRunStart });
+      sameRunStart = null;
+    }
+  }
+  if (sameRunStart !== null) {
+    sameRuns.push({ start: sameRunStart, end: items.length - 1, length: items.length - sameRunStart });
+  }
+
+  const biggestAdvance = moves.filter((move) => move.delta > 0).sort((a, b) => b.delta - a.delta)[0];
+  const biggestRetro = moves.filter((move) => move.delta < 0).sort((a, b) => a.delta - b.delta)[0];
+  const longestPause = sameRuns.sort((a, b) => b.length - a.length)[0];
+  const latest = items[items.length - 1];
+  const cards = [];
+
+  if (biggestAdvance) {
+    cards.push({
+      icon: "🚀",
+      title: "最大前進",
+      text: `${bulletinShortName(items[biggestAdvance.index].bulletin)} · ${formatDuration(biggestAdvance.delta)}`,
+    });
+  }
+  if (biggestRetro) {
+    cards.push({
+      icon: "⬅️",
+      title: "明顯倒退",
+      text: `${bulletinShortName(items[biggestRetro.index].bulletin)} · ${formatDuration(biggestRetro.delta)}`,
+    });
+  }
+  if (longestPause) {
+    cards.push({
+      icon: "⏸️",
+      title: "最長停滯",
+      text: `${bulletinShortName(items[longestPause.start].bulletin)} 到 ${bulletinShortName(items[longestPause.end].bulletin)}`,
+    });
+  }
+  cards.push({
+    icon: "🐱",
+    title: "本月位置",
+    text: `${bulletinShortName(latest.bulletin)} · ${latest.value}`,
+  });
+
+  return cards.slice(0, 4);
 }
 
 function buildShareText(current) {
@@ -461,6 +516,7 @@ function renderHistoryChart(current) {
   if (!els.historyChart) return;
   const items = buildHistoryItems(current);
   els.historyChart.innerHTML = "";
+  if (els.historyHighlights) els.historyHighlights.innerHTML = "";
 
   if (items.length === 0) {
     els.historySummary.textContent = "目前還沒有可畫圖的資料";
@@ -510,7 +566,8 @@ function renderHistoryChart(current) {
     els.historyChart.appendChild(polyline);
   }
 
-  const important = new Set(importantHistoryIndexes(items));
+  const importantIndexes = importantHistoryIndexes(items);
+  const important = new Set(importantIndexes);
   points.forEach((point, index) => {
     const kind = classifyHistoryPoint(items, index);
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -521,17 +578,13 @@ function renderHistoryChart(current) {
     els.historyChart.appendChild(dot);
 
     if (important.has(index)) {
-      const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-      group.setAttribute("class", "chart-callout");
-      const labelY = Math.max(22, point.y - 18);
       const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
       label.setAttribute("class", `chart-label ${kind}`);
       label.setAttribute("x", point.x);
-      label.setAttribute("y", labelY);
+      label.setAttribute("y", index % 2 === 0 ? 22 : chartHeight - 14);
       label.setAttribute("text-anchor", "middle");
-      label.textContent = `${bulletinShortName(point.bulletin)} · ${point.value}`;
-      group.appendChild(label);
-      els.historyChart.appendChild(group);
+      label.textContent = point.value;
+      els.historyChart.appendChild(label);
     }
   });
 
@@ -542,6 +595,13 @@ function renderHistoryChart(current) {
   if (current?.source_url) {
     els.historySourceLink.href = "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html";
   }
+
+  buildHistoryHighlights(items).forEach((card) => {
+    const item = document.createElement("article");
+    item.className = "history-highlight";
+    item.innerHTML = `<span>${card.icon}</span><strong>${card.title}</strong><small>${card.text}</small>`;
+    els.historyHighlights?.appendChild(item);
+  });
 }
 
 function buildPdMessage() {

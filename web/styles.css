@@ -781,6 +781,19 @@ body[data-mood="retrogressed"] .brady-strip path {
   font-size: clamp(25px, 3vw, 34px);
 }
 
+.case-heading-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.case-heading-row h2 {
+  min-width: 0;
+}
+
 .case-panel p:not(.section-chip) {
   max-width: 420px;
   margin-bottom: 0;
@@ -831,7 +844,7 @@ body[data-mood="retrogressed"] .brady-strip path {
 }
 
 .case-row {
-  grid-template-columns: minmax(260px, 1fr) auto auto;
+  grid-template-columns: minmax(260px, 1fr) auto;
   align-items: center;
 }
 
@@ -1134,7 +1147,7 @@ input:focus {
   max-width: 760px;
   margin-top: 12px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 850;
 }
 
@@ -1148,7 +1161,7 @@ input:focus {
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(240, 251, 255, 0.72)),
     repeating-linear-gradient(0deg, transparent 0 24px, rgba(47, 143, 167, 0.06) 24px 25px),
     repeating-linear-gradient(90deg, transparent 0 42px, rgba(47, 143, 167, 0.06) 42px 43px);
-  min-height: 250px;
+  min-height: 270px;
   margin-top: 16px;
   padding: 8px;
 }
@@ -1208,8 +1221,8 @@ input:focus {
   fill: #17364b;
   paint-order: stroke;
   stroke: rgba(255, 255, 255, 0.92);
-  stroke-width: 4px;
-  font-size: 13px;
+  stroke-width: 5px;
+  font-size: 12px;
   font-weight: 900;
 }
 
@@ -1221,6 +1234,40 @@ input:focus {
   justify-content: space-between;
   gap: 12px;
   margin-top: 16px;
+}
+
+.history-highlights {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.history-highlight {
+  border: 1px solid rgba(47, 143, 167, 0.13);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 12px;
+  display: grid;
+  gap: 2px;
+}
+
+.history-highlight span {
+  font-size: 20px;
+}
+
+.history-highlight strong {
+  color: #17364b;
+  font-size: 14px;
+}
+
+.history-highlight small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+  line-height: 1.35;
 }
 
 .history-legend {
@@ -1521,6 +1568,10 @@ pre {
     grid-template-columns: 1fr;
   }
 
+  .history-highlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .guide-grid {
     grid-template-columns: 1fr;
   }
@@ -1566,6 +1617,10 @@ pre {
 
   .pd-row,
   .case-row {
+    grid-template-columns: 1fr;
+  }
+
+  .history-highlights {
     grid-template-columns: 1fr;
   }
 

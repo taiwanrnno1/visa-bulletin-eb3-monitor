@@ -144,6 +144,7 @@
         <div class="chart-wrap">
           <svg id="historyChart" viewBox="0 0 640 220" role="img" aria-label="EB-3 排期歷史走勢圖"></svg>
         </div>
+        <div class="history-highlights" id="historyHighlights"></div>
         <div class="history-footer">
           <div class="history-legend">
             <span><i class="legend-dot advance"></i>前進</span>
@@ -176,7 +177,10 @@
       <section class="case-panel" aria-label="I-140 進度查詢">
         <div>
           <p class="section-chip">🐾 I-140 Case 小筆記</p>
-          <h2>I-140 進度查詢</h2>
+          <div class="case-heading-row">
+            <h2>I-140 進度查詢</h2>
+            <button id="openCaseStatus" class="secondary-action compact-button" type="button">🐱 開啟 USCIS 官方查詢</button>
+          </div>
           <p>不用輸入也可以直接開 USCIS 官方查詢。Receipt Number 是選填小筆記，只存在你的裝置喵～</p>
         </div>
         <form class="case-form" id="caseForm">
@@ -184,7 +188,6 @@
           <div class="case-row">
             <input id="receiptInput" name="receiptInput" placeholder="例如 EAC1234567890" autocomplete="off" />
             <button id="saveReceipt" type="submit">🐾 儲存</button>
-            <button id="openCaseStatus" class="secondary-action" type="button">🐱 開啟 USCIS 官方查詢</button>
           </div>
           <p class="privacy-note" id="caseNote">可以不輸入直接開官方頁；若想下次少打一點，再選擇儲存在本機。</p>
         </form>
