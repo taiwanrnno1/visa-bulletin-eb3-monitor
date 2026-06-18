@@ -99,8 +99,11 @@ WORKER_BROADCAST_SECRET
 https://YOUR_WORKER_URL/api/broadcast
 ```
 
-After the Worker URL is known, set `PUSH_WORKER_BASE` in `web/app.js` to that
-Worker URL and push the site again.
+The current Worker URL is:
+
+```text
+https://visa-bulletin-eb3-push.t6213982-32d.workers.dev
+```
 
 ## Web dashboard
 

@@ -3,3 +3,4 @@ vapid_keys.json
 __pycache__/
 .pycache/
 .env
+worker/node_modules/

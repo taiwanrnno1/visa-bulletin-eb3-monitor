@@ -3,7 +3,7 @@ main = "src/worker.js"
 compatibility_date = "2026-06-01"
 
 kv_namespaces = [
-  { binding = "PUSH_SUBSCRIPTIONS", id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID" }
+  { binding = "PUSH_SUBSCRIPTIONS", id = "31254d8da7a24e8986b360a48a051995" }
 ]
 
 [vars]

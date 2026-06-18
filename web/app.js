@@ -2,7 +2,7 @@ const CHECK_INTERVAL_MS = 30 * 60 * 1000;
 const PD_STORAGE_KEY = "visaBulletinEb3PriorityDate";
 const DEVICE_ID_STORAGE_KEY = "visaBulletinEb3DeviceId";
 const WORKER_BASE_STORAGE_KEY = "visaBulletinEb3WorkerBase";
-const PUSH_WORKER_BASE = "";
+const PUSH_WORKER_BASE = "https://visa-bulletin-eb3-push.t6213982-32d.workers.dev";
 const NTFY_TOPIC = "visa-bulletin-eb3-taiwanrnno1";
 const NTFY_URL = `https://ntfy.sh/${NTFY_TOPIC}`;
 
