@@ -375,6 +375,11 @@ async function checkNow({ notifyBrowser = true } = {}) {
 }
 
 async function enableNotifications() {
+  if (window.location.protocol === "file:") {
+    els.noticeText.textContent = "瀏覽器通知需要用正式 HTTPS 網址開啟，請使用 GitHub Pages 網站後再按開啟通知。";
+    return;
+  }
+
   if (!state.backendAvailable && !pushWorkerBase()) {
     els.noticeText.textContent = `手機通知設定：\n1. 手機安裝 ntfy App。\n2. 新增訂閱 topic：${NTFY_TOPIC}\n3. 朋友也訂閱同一個 topic，就會一起收到每月公告通知。\n\n訂閱網址：${NTFY_URL}`;
     window.open(NTFY_URL, "_blank", "noopener,noreferrer");
