@@ -292,6 +292,20 @@ function bulletinShortName(label) {
   return `${match[1].slice(0, 3)} ${match[2]}`;
 }
 
+function bulletinMonthLabel(item) {
+  if (item?.year && item?.month) {
+    return `${item.year}/${String(item.month).padStart(2, "0")} 公布`;
+  }
+  return `${bulletinShortName(item?.bulletin)} 公布`;
+}
+
+function historyPointLabel(item) {
+  return {
+    bulletin: bulletinMonthLabel(item),
+    pd: `PD 到 ${item.value}`,
+  };
+}
+
 function classifyHistoryPoint(items, index) {
   if (index === 0) return "start";
   const previous = parseVisaDate(items[index - 1].value);
@@ -393,7 +407,7 @@ function buildHistoryInsight(items) {
     }
   }
 
-  return `近兩年：前進 ${advanced} 次、維持 ${same} 次、倒退 ${retrogressed} 次。重點轉折看下面小卡喵～`;
+  return `每個標籤上排是公布月份，下排是當月表 A PD 更新到哪一天。近兩年：前進 ${advanced} 次、維持 ${same} 次、倒退 ${retrogressed} 次喵～`;
 }
 
 function buildHistoryHighlights(items) {
@@ -425,14 +439,14 @@ function buildHistoryHighlights(items) {
     cards.push({
       icon: "🚀",
       title: "最大前進",
-      text: `${bulletinShortName(items[biggestAdvance.index].bulletin)} · ${formatDuration(biggestAdvance.delta)}`,
+      text: `${bulletinMonthLabel(items[biggestAdvance.index])} · PD 到 ${items[biggestAdvance.index].value}`,
     });
   }
   if (biggestRetro) {
     cards.push({
       icon: "⬅️",
       title: "明顯倒退",
-      text: `${bulletinShortName(items[biggestRetro.index].bulletin)} · ${formatDuration(biggestRetro.delta)}`,
+      text: `${bulletinMonthLabel(items[biggestRetro.index])} · PD 到 ${items[biggestRetro.index].value}`,
     });
   }
   if (longestPause) {
@@ -445,7 +459,7 @@ function buildHistoryHighlights(items) {
   cards.push({
     icon: "🐱",
     title: "本月位置",
-    text: `${bulletinShortName(latest.bulletin)} · ${latest.value}`,
+    text: `${bulletinMonthLabel(latest)} · PD 到 ${latest.value}`,
   });
 
   return cards.slice(0, 4);
@@ -530,7 +544,7 @@ function renderHistoryChart(current) {
   const range = Math.max(1, max - min);
   const chartWidth = 640;
   const chartHeight = 220;
-  const pad = 64;
+  const pad = 72;
   const usableWidth = chartWidth - pad * 2;
   const usableHeight = chartHeight - pad * 2;
 
@@ -568,10 +582,12 @@ function renderHistoryChart(current) {
 
   const importantIndexes = importantHistoryIndexes(items);
   const important = new Set(importantIndexes);
-  const topLabelTracks = [20, 40];
-  const bottomLabelTracks = [chartHeight - 10, chartHeight - 32];
+  const topLabelTracks = [22, 58];
+  const bottomLabelTracks = [chartHeight - 22, chartHeight - 58];
   const placedLabels = [];
-  const labelGap = 96;
+  const labelWidth = 112;
+  const labelHeight = 34;
+  const labelGap = 118;
   points.forEach((point, index) => {
     const kind = classifyHistoryPoint(items, index);
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -582,20 +598,52 @@ function renderHistoryChart(current) {
     els.historyChart.appendChild(dot);
 
     if (important.has(index)) {
-      const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
       const preferredTracks = point.y > chartHeight / 2
         ? bottomLabelTracks.concat(topLabelTracks)
         : topLabelTracks.concat(bottomLabelTracks);
       const trackY = preferredTracks.find((track) => (
         placedLabels.every((placed) => placed.y !== track || Math.abs(placed.x - point.x) > labelGap)
       )) || preferredTracks[index % preferredTracks.length];
-      placedLabels.push({ x: point.x, y: trackY });
-      label.setAttribute("class", `chart-label ${kind}`);
-      label.setAttribute("x", point.x);
-      label.setAttribute("y", trackY);
-      label.setAttribute("text-anchor", "middle");
-      label.textContent = point.value;
-      els.historyChart.appendChild(label);
+      const labelX = Math.max(labelWidth / 2 + 8, Math.min(chartWidth - labelWidth / 2 - 8, point.x));
+      placedLabels.push({ x: labelX, y: trackY });
+
+      const connector = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      connector.setAttribute("class", `chart-label-connector ${kind}`);
+      connector.setAttribute("x1", point.x);
+      connector.setAttribute("y1", point.y);
+      connector.setAttribute("x2", labelX);
+      connector.setAttribute("y2", trackY);
+      els.historyChart.insertBefore(connector, dot);
+
+      const labelGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      labelGroup.setAttribute("class", `chart-label-card ${kind}`);
+      labelGroup.setAttribute("transform", `translate(${labelX - labelWidth / 2}, ${trackY - labelHeight / 2})`);
+
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("width", labelWidth);
+      rect.setAttribute("height", labelHeight);
+      rect.setAttribute("rx", "9");
+      rect.setAttribute("ry", "9");
+      labelGroup.appendChild(rect);
+
+      const labelText = historyPointLabel(point);
+      const bulletinText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      bulletinText.setAttribute("class", "chart-label-month");
+      bulletinText.setAttribute("x", labelWidth / 2);
+      bulletinText.setAttribute("y", "13");
+      bulletinText.setAttribute("text-anchor", "middle");
+      bulletinText.textContent = labelText.bulletin;
+      labelGroup.appendChild(bulletinText);
+
+      const pdText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      pdText.setAttribute("class", "chart-label-pd");
+      pdText.setAttribute("x", labelWidth / 2);
+      pdText.setAttribute("y", "27");
+      pdText.setAttribute("text-anchor", "middle");
+      pdText.textContent = labelText.pd;
+      labelGroup.appendChild(pdText);
+
+      els.historyChart.appendChild(labelGroup);
     }
   });
 

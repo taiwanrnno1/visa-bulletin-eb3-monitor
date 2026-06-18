@@ -317,29 +317,18 @@ h2 {
   margin: 0;
 }
 
-h1 {
+.brand-title {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
-  width: fit-content;
-  max-width: 100%;
-  border: 1px solid rgba(47, 143, 167, 0.18);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.72);
-  padding: 8px 14px;
-  color: #17364b;
-  font-size: clamp(18px, 2.55vw, 30px);
-  line-height: 1.08;
-  white-space: nowrap;
-  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85);
+  width: min(640px, 100%);
 }
 
-h1::after {
-  content: "";
-  color: var(--accent);
-  font-size: 0.38em;
-  vertical-align: 0.36em;
+.brand-title img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .title-row {
@@ -349,8 +338,8 @@ h1::after {
   align-items: end;
   flex-wrap: wrap;
   gap: 8px 14px;
-  min-height: 132px;
-  padding: 58px 0 4px 104px;
+  min-height: 176px;
+  padding: 18px 0 4px 120px;
 }
 
 .byline {
@@ -1320,13 +1309,41 @@ input:focus {
   stroke: #2f8fa7;
 }
 
-.chart-label {
-  fill: #17364b;
-  paint-order: stroke;
-  stroke: rgba(255, 255, 255, 0.92);
-  stroke-width: 5px;
-  font-size: 12px;
+.chart-label-connector {
+  stroke: rgba(32, 48, 65, 0.16);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 5;
+}
+
+.chart-label-card rect {
+  fill: rgba(255, 255, 255, 0.9);
+  stroke: rgba(47, 143, 167, 0.18);
+  stroke-width: 1;
+  filter: drop-shadow(0 8px 10px rgba(36, 93, 115, 0.12));
+}
+
+.chart-label-card.advanced rect {
+  stroke: rgba(47, 156, 106, 0.28);
+}
+
+.chart-label-card.retrogressed rect {
+  stroke: rgba(188, 91, 100, 0.32);
+}
+
+.chart-label-card.same rect {
+  stroke: rgba(200, 137, 45, 0.28);
+}
+
+.chart-label-month {
+  fill: #64748b;
+  font-size: 8px;
   font-weight: 900;
+}
+
+.chart-label-pd {
+  fill: #17364b;
+  font-size: 11px;
+  font-weight: 950;
 }
 
 .history-footer {
@@ -1722,8 +1739,12 @@ pre {
   }
 
   .title-row {
-    min-height: 112px;
-    padding: 44px 0 4px 76px;
+    min-height: 146px;
+    padding: 18px 0 4px 72px;
+  }
+
+  .brand-title {
+    width: min(440px, 100%);
   }
 
   .top-actions,
