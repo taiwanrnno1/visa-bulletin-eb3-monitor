@@ -306,8 +306,6 @@ def build_notice(
     previous_url = previous.get("source_url")
     previous_bulletin = previous.get("bulletin")
     previous_month_value = current.get("previous_bulletin_eb3_all_chargeability_final_action_date")
-    previous_month_label = current.get("previous_bulletin")
-    previous_month_url = current.get("previous_bulletin_source_url")
 
     value = str(current["eb3_all_chargeability_final_action_date"])
     latest_label = str(current["bulletin"])
@@ -324,13 +322,8 @@ def build_notice(
             f"EB-3 All Chargeability 本月公布日期：{value}",
             f"相較上個月：{movement['label']}",
         ]
-        if previous_month_label is not None:
-            lines.append(f"比較基準：{previous_month_label}")
         if previous_month_value is not None and previous_month_value != value:
             lines.append(f"上個月數值：{previous_month_value}")
-        if previous_month_url is not None:
-            lines.append(f"上個月來源：{previous_month_url}")
-        lines.append(f"官方來源：{latest_url}")
         return {
             "status": "new_bulletin",
             "notify": True,
@@ -346,9 +339,7 @@ def build_notice(
         lines = [
             f"EB-3 All Chargeability 數值更新：{old_display} -> {value}",
             f"相較上個月：{movement['label']}",
-            f"比較基準：{previous_month_label}",
             f"公告月份：{latest_label}",
-            f"官方來源：{latest_url}",
         ]
         return {
             "status": "value_changed",
