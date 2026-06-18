@@ -17,6 +17,9 @@ export default {
       if (url.pathname === "/api/broadcast" && request.method === "POST") {
         return broadcast(request, env);
       }
+      if (url.pathname === "/api/test" && request.method === "POST") {
+        return testPush(request, env);
+      }
       if (url.pathname === "/api/health" && request.method === "GET") {
         return json({ ok: true }, env);
       }
@@ -83,6 +86,26 @@ async function broadcast(request, env) {
     },
   };
 
+  return sendToAll(message, env);
+}
+
+async function testPush(request, env) {
+  const auth = request.headers.get("Authorization") || "";
+  if (!env.BROADCAST_SECRET || auth !== `Bearer ${env.BROADCAST_SECRET}`) {
+    return json({ ok: false, error: "Unauthorized" }, env, 401);
+  }
+
+  const message = {
+    title: "Visa Bulletin 測試通知",
+    body: "這是一則測試推播。正式公告出來時，也會像這樣跳出提醒。",
+    url: env.SITE_URL || "/",
+    tag: "visa-bulletin-eb3-test",
+    data: { test: true },
+  };
+  return sendToAll(message, env);
+}
+
+async function sendToAll(message, env) {
   let cursor;
   let sent = 0;
   let failed = 0;
