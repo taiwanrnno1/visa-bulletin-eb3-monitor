@@ -192,8 +192,8 @@ body[data-mood="retrogressed"] {
 
 .nurse-badge {
   flex: 0 0 auto;
-  width: 152px;
-  height: 190px;
+  width: 136px;
+  height: 168px;
   object-fit: contain;
   object-position: center;
   filter: drop-shadow(0 16px 18px rgba(24, 30, 35, 0.16));
@@ -231,9 +231,18 @@ h2 {
 }
 
 h1 {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid rgba(47, 143, 167, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 8px 14px;
   color: #17364b;
-  font-size: clamp(30px, 4.8vw, 54px);
-  line-height: 1.05;
+  font-size: clamp(18px, 2.35vw, 28px);
+  line-height: 1.08;
+  white-space: nowrap;
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85);
 }
 
@@ -276,7 +285,7 @@ h1::after {
   display: grid;
   justify-items: end;
   gap: 8px;
-  max-width: 430px;
+  max-width: 360px;
 }
 
 .top-action-buttons {
@@ -289,10 +298,11 @@ h1::after {
 .ios-note {
   margin: 0;
   color: #53677e;
-  font-size: 17px;
+  font-size: 13px;
   font-weight: 850;
   line-height: 1.35;
   text-align: right;
+  max-width: 300px;
 }
 
 .ios-note span {
@@ -807,7 +817,7 @@ body[data-mood="retrogressed"] .brady-strip path {
 }
 
 .case-row {
-  grid-template-columns: minmax(220px, 1fr) auto auto;
+  grid-template-columns: minmax(220px, 1fr) auto auto auto;
 }
 
 .privacy-note {
@@ -943,6 +953,60 @@ button:disabled {
   cursor: wait;
   opacity: 0.65;
   transform: none;
+}
+
+.case-dialog {
+  max-width: 640px;
+}
+
+.case-result-box {
+  margin-top: 14px;
+  border: 1px solid rgba(47, 143, 167, 0.16);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 18px;
+}
+
+.case-result-status {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 22px;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.case-result-text {
+  margin-top: 12px;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.7;
+}
+
+.case-result-meta {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.case-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+.official-case-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border-radius: 999px;
+  padding: 0 16px;
+  font-weight: 900;
+  text-decoration: none;
 }
 
 .actions a {
@@ -1200,11 +1264,16 @@ pre {
 
   .ios-note {
     text-align: left;
+    max-width: none;
   }
 
   .metric.primary strong,
   .date-link {
     font-size: 42px;
+  }
+
+  h1 {
+    white-space: normal;
   }
 
   .pd-row,

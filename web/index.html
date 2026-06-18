@@ -28,7 +28,6 @@
         <div class="brand-lockup">
           <img class="nurse-badge" src="../assets/heimi-cat-transparent.png" alt="" />
           <div>
-          <p class="eyebrow">🐱 Visa Bulletin 黑咪快報</p>
           <div class="title-row">
             <h1>🇺🇸 Visa Bulletin EB-3 🇹🇼 台灣排期 黑咪快報 🐱</h1>
             <p class="byline">
@@ -127,16 +126,17 @@
         <div>
           <p class="section-chip">🐾 I-140 Case 小筆記</p>
           <h2>I-140 進度查詢</h2>
-          <p>輸入 Receipt Number，黑咪只會存在這台裝置。按查詢會開啟 USCIS 官方 Case Status 頁面喵～</p>
+          <p>輸入 Receipt Number，黑咪會幫你讀 USCIS 官方結果並翻成中文喵～</p>
         </div>
         <form class="case-form" id="caseForm">
           <label for="receiptInput">Receipt Number</label>
           <div class="case-row">
             <input id="receiptInput" name="receiptInput" placeholder="例如 EAC1234567890" autocomplete="off" />
             <button id="saveReceipt" type="submit">🐾 儲存</button>
-            <button id="openCaseStatus" class="secondary-action" type="button">📋 查詢官方進度</button>
+            <button id="checkCaseStatus" type="button">🐱 直接查詢</button>
+            <button id="openCaseStatus" class="secondary-action" type="button">📋 官方頁面</button>
           </div>
-          <p class="privacy-note" id="caseNote">Receipt Number 只儲存在你的瀏覽器本機，不會送到黑咪快報後台。</p>
+          <p class="privacy-note" id="caseNote">Receipt Number 平常只儲存在本機；按查詢時會送到 USCIS 官方，並由 Cloudflare Worker 轉送但不儲存。</p>
         </form>
       </section>
 
@@ -192,6 +192,26 @@
           <img src="../assets/heimi-face-modal.png" alt="" />
         </div>
         <p class="pd-modal-text" id="pdModalText"></p>
+      </section>
+    </div>
+
+    <div class="guide-modal" id="caseModal" aria-hidden="true">
+      <div class="guide-backdrop" data-close-case-modal></div>
+      <section class="guide-dialog case-dialog" role="dialog" aria-modal="true" aria-labelledby="caseModalTitle">
+        <button class="guide-close" type="button" aria-label="關閉 I-140 查詢結果" data-close-case-modal>×</button>
+        <p class="section-chip">🐾 I-140 查詢結果</p>
+        <div class="pd-modal-heading">
+          <h2 id="caseModalTitle">黑咪幫你看好了喵～</h2>
+          <img src="../assets/heimi-face-modal.png" alt="" />
+        </div>
+        <div class="case-result-box">
+          <p class="case-result-status" id="caseStatusTitle">查詢中...</p>
+          <p class="case-result-text" id="caseStatusText"></p>
+          <p class="case-result-meta" id="caseStatusMeta"></p>
+        </div>
+        <div class="case-modal-actions">
+          <a id="caseOfficialLink" class="secondary-action official-case-link" href="https://egov.uscis.gov/" target="_blank" rel="noreferrer">📋 打開 USCIS 官方頁</a>
+        </div>
       </section>
     </div>
 

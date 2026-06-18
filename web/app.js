@@ -44,6 +44,11 @@ const els = {
   guideModal: document.querySelector("#guideModal"),
   pdModal: document.querySelector("#pdModal"),
   pdModalText: document.querySelector("#pdModalText"),
+  caseModal: document.querySelector("#caseModal"),
+  caseStatusTitle: document.querySelector("#caseStatusTitle"),
+  caseStatusText: document.querySelector("#caseStatusText"),
+  caseStatusMeta: document.querySelector("#caseStatusMeta"),
+  caseOfficialLink: document.querySelector("#caseOfficialLink"),
   ntfyLink: document.querySelector("#ntfyLink"),
   sourceLink: document.querySelector("#sourceLink"),
   messagePanel: document.querySelector("#messagePanel"),
@@ -58,6 +63,7 @@ const els = {
   pdResult: document.querySelector("#pdResult"),
   caseForm: document.querySelector("#caseForm"),
   receiptInput: document.querySelector("#receiptInput"),
+  checkCaseStatus: document.querySelector("#checkCaseStatus"),
   openCaseStatus: document.querySelector("#openCaseStatus"),
   caseNote: document.querySelector("#caseNote"),
 };
@@ -355,6 +361,26 @@ function closePdModal() {
   els.pdModal?.setAttribute("aria-hidden", "true");
 }
 
+function openCaseModal() {
+  els.caseModal?.classList.add("open");
+  els.caseModal?.setAttribute("aria-hidden", "false");
+}
+
+function closeCaseModal() {
+  els.caseModal?.classList.remove("open");
+  els.caseModal?.setAttribute("aria-hidden", "true");
+}
+
+function renderCaseModal({ title, text, meta, officialUrl }) {
+  els.caseStatusTitle.textContent = title;
+  els.caseStatusText.textContent = text;
+  els.caseStatusMeta.textContent = meta || "";
+  if (officialUrl) {
+    els.caseOfficialLink.href = officialUrl;
+  }
+  openCaseModal();
+}
+
 async function loadStatus() {
   if (isStaticSite()) {
     state.backendAvailable = false;
@@ -486,10 +512,14 @@ document.querySelectorAll("[data-close-guide]").forEach((item) => {
 document.querySelectorAll("[data-close-pd-modal]").forEach((item) => {
   item.addEventListener("click", closePdModal);
 });
+document.querySelectorAll("[data-close-case-modal]").forEach((item) => {
+  item.addEventListener("click", closeCaseModal);
+});
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeGuide();
     closePdModal();
+    closeCaseModal();
   }
 });
 els.pdForm.addEventListener("submit", (event) => {
@@ -555,6 +585,55 @@ els.openCaseStatus?.addEventListener("click", () => {
   localStorage.setItem(RECEIPT_STORAGE_KEY, receiptNumber);
   window.open(caseStatusUrl(receiptNumber), "_blank", "noopener,noreferrer");
   els.caseNote.textContent = "已開啟 USCIS 官方 Case Status。黑咪快報只在本機保存這組號碼。";
+});
+
+els.checkCaseStatus?.addEventListener("click", async () => {
+  const receiptNumber = normalizeReceiptNumber(els.receiptInput.value || localStorage.getItem(RECEIPT_STORAGE_KEY));
+  if (!isValidReceiptNumber(receiptNumber)) {
+    els.caseNote.textContent = "請先輸入正確的 Receipt Number，再讓黑咪幫你查詢喵～";
+    els.receiptInput.focus();
+    return;
+  }
+
+  els.receiptInput.value = receiptNumber;
+  localStorage.setItem(RECEIPT_STORAGE_KEY, receiptNumber);
+  els.checkCaseStatus.disabled = true;
+  els.caseNote.textContent = "黑咪正在連到 USCIS 官方查詢中，請等一下喵～";
+  renderCaseModal({
+    title: "黑咪查詢中...",
+    text: "正在讀取 USCIS 官方 Case Status，請稍等喵～",
+    meta: `Receipt Number：${receiptNumber}`,
+    officialUrl: caseStatusUrl(receiptNumber),
+  });
+
+  try {
+    const response = await fetch(`${pushWorkerBase()}/api/case-status`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receiptNumber }),
+    });
+    const payload = await response.json();
+    if (!payload.ok) {
+      throw new Error(payload.error || "USCIS 查詢暫時失敗。");
+    }
+    renderCaseModal({
+      title: payload.titleZh || "USCIS 案件狀態",
+      text: payload.bodyZh || "黑咪讀到結果，但暫時無法翻譯完整內容，請搭配官方頁面確認喵～",
+      meta: `Receipt Number：${payload.receiptNumber}｜官方原文：${payload.title || "無標題"}`,
+      officialUrl: payload.officialUrl,
+    });
+    els.caseNote.textContent = "查詢完成。黑咪沒有儲存官方結果，只保留你本機的 Receipt Number。";
+  } catch (error) {
+    renderCaseModal({
+      title: "黑咪暫時查不到喵",
+      text: `${error.message} 你可以先按官方頁面確認，或稍後再試。`,
+      meta: `Receipt Number：${receiptNumber}`,
+      officialUrl: caseStatusUrl(receiptNumber),
+    });
+    els.caseNote.textContent = "USCIS 官方查詢暫時失敗，請用官方頁面按鈕確認或稍後再試。";
+  } finally {
+    els.checkCaseStatus.disabled = false;
+  }
 });
 
 els.pdInput.value = localStorage.getItem(PD_STORAGE_KEY) || "";
