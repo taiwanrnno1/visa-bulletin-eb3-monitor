@@ -1701,8 +1701,8 @@ pre {
 
 @media (max-width: 760px) {
   .shell {
-    width: min(100vw - 20px, 680px);
-    padding-top: 20px;
+    width: min(100vw - 18px, 680px);
+    padding-top: 14px;
   }
 
   .brand-lockup,
@@ -1718,49 +1718,70 @@ pre {
   .hemi-landing {
     --landing-x: 220px;
     --landing-y: -70px;
-    left: -8px;
-    top: -8px;
-    width: 108px;
-    height: 76px;
+    left: -4px;
+    top: 0;
+    width: 82px;
+    height: 58px;
   }
 
   .hemi-landing::before {
-    height: 48px;
+    height: 32px;
     bottom: 5px;
   }
 
   .nurse-badge {
-    width: 108px;
-    height: 76px;
+    width: 82px;
+    height: 58px;
   }
 
   .title-row {
+    justify-items: center;
     width: 100%;
-    min-height: 126px;
-    padding: 8px 0 4px 54px;
+    min-height: 0;
+    padding: 10px 0 4px;
   }
 
   .brand-title {
-    width: min(420px, 100%);
+    width: min(330px, 92vw);
   }
 
   .brand-bottom-row {
     align-items: stretch;
     grid-template-columns: 1fr;
-    gap: 12px;
-    width: 100%;
+    justify-items: center;
+    gap: 10px;
+    width: min(330px, 92vw);
+  }
+
+  .byline {
+    max-width: 100%;
+    text-align: center;
+    font-size: 13px;
   }
 
   .top-actions,
   .top-action-buttons {
+    width: 100%;
     justify-items: stretch;
     justify-content: stretch;
     max-width: none;
   }
 
+  .top-action-buttons {
+    display: grid;
+    gap: 8px;
+  }
+
+  .top-actions button {
+    width: 100%;
+    min-height: 44px;
+    font-size: 14px;
+  }
+
   .ios-note {
-    text-align: left;
+    text-align: center;
     max-width: none;
+    font-size: 12px;
   }
 
   .metric.primary strong,
@@ -1779,6 +1800,82 @@ pre {
 
   .history-highlights {
     grid-template-columns: 1fr;
+  }
+
+  .progress-card,
+  .share-card {
+    min-height: 0;
+    padding: 18px;
+  }
+
+  .share-card h2,
+  .history-panel h2 {
+    font-size: 26px;
+    line-height: 1.18;
+  }
+
+  .share-card .tool-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+  }
+
+  .share-card .section-chip {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+
+  .share-card .compact-button {
+    width: 100%;
+    min-height: 40px;
+    font-size: 13px;
+  }
+
+  .share-preview {
+    min-height: 0;
+    padding: 14px;
+    font-size: 13px;
+    line-height: 1.52;
+    overflow-wrap: anywhere;
+  }
+
+  .history-panel {
+    padding: 18px;
+  }
+
+  .history-panel .tool-head {
+    align-items: start;
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .history-panel .tool-head > span {
+    max-width: 96px;
+    text-align: right;
+    line-height: 1.25;
+  }
+
+  .history-intro {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .chart-wrap {
+    min-height: 0;
+    margin-top: 14px;
+    padding: 4px;
+    border-radius: 18px;
+  }
+
+  #historyChart {
+    width: 100%;
+    height: auto;
+  }
+
+  .history-highlight {
+    min-height: 0;
   }
 
   .pd-modal-heading {
