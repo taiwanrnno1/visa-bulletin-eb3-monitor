@@ -1,5 +1,6 @@
 const CHECK_INTERVAL_MS = 60 * 60 * 1000;
 const PD_STORAGE_KEY = "visaBulletinEb3PriorityDate";
+const RECEIPT_STORAGE_KEY = "heimiCaseReceiptNumber";
 const DEVICE_ID_STORAGE_KEY = "visaBulletinEb3DeviceId";
 const WORKER_BASE_STORAGE_KEY = "visaBulletinEb3WorkerBase";
 const PUSH_WORKER_BASE = "https://visa-bulletin-eb3-push.t6213982-32d.workers.dev";
@@ -54,6 +55,10 @@ const els = {
   openPdCalendar: document.querySelector("#openPdCalendar"),
   pdDatePicker: document.querySelector("#pdDatePicker"),
   pdResult: document.querySelector("#pdResult"),
+  caseForm: document.querySelector("#caseForm"),
+  receiptInput: document.querySelector("#receiptInput"),
+  openCaseStatus: document.querySelector("#openCaseStatus"),
+  caseNote: document.querySelector("#caseNote"),
 };
 
 function formatChecked(value) {
@@ -177,6 +182,20 @@ function toIsoDate(date) {
   const month = String(date.getUTCMonth() + 1).padStart(2, "0");
   const day = String(date.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
+}
+
+function normalizeReceiptNumber(value) {
+  return String(value || "").replace(/[\s-]/g, "").toUpperCase();
+}
+
+function isValidReceiptNumber(value) {
+  return /^[A-Z]{3}\d{10}$/.test(normalizeReceiptNumber(value));
+}
+
+function caseStatusUrl(receiptNumber) {
+  const url = new URL("https://egov.uscis.gov/casestatus/mycasestatus.do");
+  url.searchParams.set("appReceiptNum", normalizeReceiptNumber(receiptNumber));
+  return url.toString();
 }
 
 function formatDuration(days) {
@@ -447,7 +466,7 @@ async function enableNotifications() {
       } else {
         await subscribeWithWorker(subscription.toJSON());
       }
-      notify("黑咪即時通已開啟", "這台裝置已完成通知訂閱喵～");
+      notify("黑咪快報已開啟", "這台裝置已完成通知訂閱喵～");
       els.noticeText.textContent = "📣 通知已開啟。之後新月份公告或排期變動時，這台裝置會收到黑咪提醒喵～";
     } catch (error) {
       els.noticeText.textContent = `通知設定失敗：${error.message}`;
@@ -512,7 +531,35 @@ els.pdDatePicker.addEventListener("change", () => {
   });
 });
 
+els.caseForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const receiptNumber = normalizeReceiptNumber(els.receiptInput.value);
+  if (!isValidReceiptNumber(receiptNumber)) {
+    els.caseNote.textContent = "Receipt Number 格式看起來不對喵～通常是 3 個英文字母加 10 個數字，例如 IOE0927085297。";
+    return;
+  }
+  els.receiptInput.value = receiptNumber;
+  localStorage.setItem(RECEIPT_STORAGE_KEY, receiptNumber);
+  els.caseNote.textContent = "已儲存在這台裝置。Receipt Number 不會送到黑咪快報後台喵～";
+});
+
+els.openCaseStatus?.addEventListener("click", () => {
+  const receiptNumber = normalizeReceiptNumber(els.receiptInput.value || localStorage.getItem(RECEIPT_STORAGE_KEY));
+  if (!isValidReceiptNumber(receiptNumber)) {
+    els.caseNote.textContent = "請先輸入正確的 Receipt Number，再開啟 USCIS 官方查詢。";
+    els.receiptInput.focus();
+    return;
+  }
+  els.receiptInput.value = receiptNumber;
+  localStorage.setItem(RECEIPT_STORAGE_KEY, receiptNumber);
+  window.open(caseStatusUrl(receiptNumber), "_blank", "noopener,noreferrer");
+  els.caseNote.textContent = "已開啟 USCIS 官方 Case Status。黑咪快報只在本機保存這組號碼。";
+});
+
 els.pdInput.value = localStorage.getItem(PD_STORAGE_KEY) || "";
+if (els.receiptInput) {
+  els.receiptInput.value = localStorage.getItem(RECEIPT_STORAGE_KEY) || "";
+}
 {
   const savedPd = parseVisaDate(els.pdInput.value);
   if (savedPd) {

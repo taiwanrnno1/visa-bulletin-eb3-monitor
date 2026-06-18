@@ -1,6 +1,6 @@
 {
-  "name": "黑咪即時通",
-  "short_name": "黑咪即時通",
+  "name": "黑咪快報",
+  "short_name": "黑咪快報",
   "id": "./web/",
   "start_url": "web/",
   "scope": "./",

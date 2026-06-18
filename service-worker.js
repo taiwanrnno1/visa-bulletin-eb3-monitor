@@ -8,7 +8,7 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("push", (event) => {
   let payload = {
-    title: "Visa Bulletin EB-3 監控",
+    title: "黑咪快報",
     body: "排期有新的更新。",
     url: "./",
   };

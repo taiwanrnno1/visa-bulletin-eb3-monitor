@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>黑咪即時通</title>
+    <title>黑咪快報</title>
     <link rel="manifest" href="../manifest.json" />
     <link rel="apple-touch-icon" href="../assets/heimi-face-app-icon.png" />
     <link rel="icon" type="image/png" href="../assets/heimi-face-app-icon.png" />
     <meta name="theme-color" content="#2f8fa7" />
-    <meta name="apple-mobile-web-app-title" content="黑咪即時通" />
+    <meta name="apple-mobile-web-app-title" content="黑咪快報" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -28,7 +28,7 @@
         <div class="brand-lockup">
           <img class="nurse-badge" src="../assets/heimi-cat-transparent.png" alt="" />
           <div>
-          <p class="eyebrow">🐱 Visa Bulletin 黑咪即時通</p>
+          <p class="eyebrow">🐱 Visa Bulletin 黑咪快報</p>
           <div class="title-row">
             <h1>EB-3 全球排期</h1>
             <p class="byline">
@@ -108,6 +108,23 @@
             </div>
             <button id="savePd" type="submit">🐾 儲存 PD</button>
           </div>
+        </form>
+      </section>
+
+      <section class="case-panel" aria-label="I-140 進度查詢">
+        <div>
+          <p class="section-chip">🐾 I-140 Case 小筆記</p>
+          <h2>I-140 進度查詢</h2>
+          <p>輸入 Receipt Number，黑咪只會存在這台裝置。按查詢會開啟 USCIS 官方 Case Status 頁面喵～</p>
+        </div>
+        <form class="case-form" id="caseForm">
+          <label for="receiptInput">Receipt Number</label>
+          <div class="case-row">
+            <input id="receiptInput" name="receiptInput" placeholder="例如 IOE0927085297 或 EAC1234567890" autocomplete="off" />
+            <button id="saveReceipt" type="submit">🐾 儲存</button>
+            <button id="openCaseStatus" class="secondary-action" type="button">📋 查詢官方進度</button>
+          </div>
+          <p class="privacy-note" id="caseNote">Receipt Number 只儲存在你的瀏覽器本機，不會送到黑咪快報後台。</p>
         </form>
       </section>
 

@@ -307,6 +307,7 @@ p {
 
 .message-panel,
 .pd-panel,
+.case-panel,
 .feed {
   border: 1px solid rgba(47, 143, 167, 0.16);
   border-radius: 24px;
@@ -702,7 +703,8 @@ body[data-mood="retrogressed"] .brady-strip path {
   font-weight: 750;
 }
 
-.pd-panel {
+.pd-panel,
+.case-panel {
   position: relative;
   display: grid;
   grid-template-columns: 0.9fr 1.3fr;
@@ -713,7 +715,15 @@ body[data-mood="retrogressed"] .brady-strip path {
   overflow: hidden;
 }
 
-.pd-panel::after {
+.case-panel {
+  grid-template-columns: 0.82fr 1.38fr;
+  background:
+    radial-gradient(circle at 96% 18%, rgba(255, 229, 236, 0.7), transparent 28%),
+    rgba(255, 255, 255, 0.88);
+}
+
+.pd-panel::after,
+.case-panel::after {
   content: "🐾";
   position: absolute;
   left: 24px;
@@ -723,7 +733,17 @@ body[data-mood="retrogressed"] .brady-strip path {
   transform: rotate(-18deg);
 }
 
-.pd-form label {
+.case-panel::before {
+  content: "📋";
+  position: absolute;
+  right: 24px;
+  top: 18px;
+  color: rgba(47, 143, 167, 0.16);
+  font-size: 34px;
+}
+
+.pd-form label,
+.case-form label {
   display: block;
   margin-bottom: 8px;
   color: var(--muted);
@@ -731,15 +751,29 @@ body[data-mood="retrogressed"] .brady-strip path {
   font-weight: 800;
 }
 
-.pd-form {
+.pd-form,
+.case-form {
   display: grid;
   gap: 10px;
 }
 
-.pd-row {
+.pd-row,
+.case-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
+}
+
+.case-row {
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+}
+
+.privacy-note {
+  margin: 0;
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.45;
 }
 
 input {
@@ -1088,7 +1122,8 @@ pre {
 
 @media (max-width: 880px) {
   .snapshot,
-  .pd-panel {
+  .pd-panel,
+  .case-panel {
     grid-template-columns: 1fr;
   }
 
@@ -1130,7 +1165,8 @@ pre {
     font-size: 42px;
   }
 
-  .pd-row {
+  .pd-row,
+  .case-row {
     grid-template-columns: 1fr;
   }
 
