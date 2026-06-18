@@ -317,7 +317,7 @@ h2 {
   display: grid;
   justify-items: start;
   gap: 12px;
-  width: min(760px, 100%);
+  width: min(920px, 100%);
   min-height: 150px;
   margin: 0 auto;
   padding: 8px 0 4px 92px;
@@ -327,23 +327,37 @@ h2 {
   position: relative;
   z-index: 4;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto;
-  align-items: start;
-  gap: 16px;
-  width: min(650px, 100%);
+  grid-template-columns: minmax(390px, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  width: min(850px, 100%);
 }
 
 .byline {
   position: relative;
   z-index: 2;
   display: grid;
-  gap: 2px;
-  max-width: 340px;
+  gap: 5px;
+  max-width: 440px;
   margin: 0;
+  border: 1px solid rgba(47, 143, 167, 0.13);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow: 0 10px 22px rgba(36, 93, 115, 0.08);
   color: #53677e;
-  font-size: clamp(12px, 1.55vw, 14px);
-  font-weight: 800;
+  font-size: clamp(14px, 1.5vw, 17px);
+  font-weight: 900;
   line-height: 1.35;
+  padding: 10px 14px;
+  backdrop-filter: blur(14px);
+}
+
+.byline span:first-child {
+  color: #17364b;
+}
+
+.byline span:last-child {
+  color: #2f8f6b;
 }
 
 .byline a {
@@ -359,8 +373,8 @@ h2 {
 .top-actions {
   display: grid;
   justify-items: start;
-  gap: 5px;
-  max-width: 320px;
+  gap: 7px;
+  max-width: 410px;
 }
 
 .top-action-buttons {
@@ -379,15 +393,16 @@ h2 {
 .ios-note {
   margin: 0;
   color: #53677e;
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 850;
   line-height: 1.35;
   text-align: left;
-  max-width: 300px;
+  max-width: 410px;
+  white-space: nowrap;
 }
 
 .ios-note span {
-  display: block;
+  display: inline;
 }
 
 .disclaimer-ticker {
@@ -1757,6 +1772,7 @@ pre {
     max-width: 100%;
     text-align: center;
     font-size: 13px;
+    padding: 9px 12px;
   }
 
   .top-actions,
@@ -1782,6 +1798,11 @@ pre {
     text-align: center;
     max-width: none;
     font-size: 12px;
+    white-space: normal;
+  }
+
+  .ios-note span {
+    display: block;
   }
 
   .metric.primary strong,
