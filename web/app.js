@@ -1,6 +1,7 @@
 const CHECK_INTERVAL_MS = 60 * 60 * 1000;
 const PD_STORAGE_KEY = "visaBulletinEb3PriorityDate";
 const RECEIPT_STORAGE_KEY = "heimiCaseReceiptNumber";
+const RECEIPT_PRIVACY_RESET_KEY = "heimiCaseReceiptPrivacyResetV1";
 const DEVICE_ID_STORAGE_KEY = "visaBulletinEb3DeviceId";
 const WORKER_BASE_STORAGE_KEY = "visaBulletinEb3WorkerBase";
 const PUSH_WORKER_BASE = "https://visa-bulletin-eb3-push.t6213982-32d.workers.dev";
@@ -535,7 +536,7 @@ els.caseForm?.addEventListener("submit", (event) => {
   event.preventDefault();
   const receiptNumber = normalizeReceiptNumber(els.receiptInput.value);
   if (!isValidReceiptNumber(receiptNumber)) {
-    els.caseNote.textContent = "Receipt Number 格式看起來不對喵～通常是 3 個英文字母加 10 個數字，例如 IOE0927085297。";
+    els.caseNote.textContent = "Receipt Number 格式看起來不對喵～通常是 3 個英文字母加 10 個數字，例如 EAC1234567890。";
     return;
   }
   els.receiptInput.value = receiptNumber;
@@ -558,7 +559,11 @@ els.openCaseStatus?.addEventListener("click", () => {
 
 els.pdInput.value = localStorage.getItem(PD_STORAGE_KEY) || "";
 if (els.receiptInput) {
-  els.receiptInput.value = localStorage.getItem(RECEIPT_STORAGE_KEY) || "";
+  if (!localStorage.getItem(RECEIPT_PRIVACY_RESET_KEY)) {
+    localStorage.removeItem(RECEIPT_STORAGE_KEY);
+    localStorage.setItem(RECEIPT_PRIVACY_RESET_KEY, "done");
+  }
+  els.receiptInput.value = normalizeReceiptNumber(localStorage.getItem(RECEIPT_STORAGE_KEY)) || "";
 }
 {
   const savedPd = parseVisaDate(els.pdInput.value);

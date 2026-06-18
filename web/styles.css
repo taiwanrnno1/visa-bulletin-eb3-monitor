@@ -187,16 +187,16 @@ body[data-mood="retrogressed"] {
 .brand-lockup {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
 }
 
 .nurse-badge {
   flex: 0 0 auto;
-  width: 118px;
-  height: 148px;
+  width: 152px;
+  height: 190px;
   object-fit: contain;
   object-position: center;
-  filter: drop-shadow(0 12px 14px rgba(24, 30, 35, 0.14));
+  filter: drop-shadow(0 16px 18px rgba(24, 30, 35, 0.16));
 }
 
 .eyebrow,
@@ -232,13 +232,13 @@ h2 {
 
 h1 {
   color: #17364b;
-  font-size: clamp(34px, 6vw, 60px);
-  line-height: 1;
+  font-size: clamp(30px, 4.8vw, 54px);
+  line-height: 1.05;
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85);
 }
 
 h1::after {
-  content: " 🐾";
+  content: "";
   color: var(--accent);
   font-size: 0.38em;
   vertical-align: 0.36em;
@@ -289,10 +289,52 @@ h1::after {
 .ios-note {
   margin: 0;
   color: #53677e;
+  font-size: 17px;
+  font-weight: 850;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.ios-note span {
+  display: block;
+}
+
+.disclaimer-ticker {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(47, 143, 167, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: var(--small-shadow);
+  margin: -4px 0 16px;
+  padding: 9px 0;
+  backdrop-filter: blur(16px);
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  gap: 34px;
+  color: #53677e;
   font-size: 13px;
   font-weight: 850;
-  line-height: 1.45;
-  text-align: right;
+  white-space: nowrap;
+  animation: ticker-scroll 34s linear infinite;
+}
+
+.ticker-track span {
+  display: inline-flex;
+  align-items: center;
+}
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 h2 {
