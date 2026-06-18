@@ -1,0 +1,17 @@
+{
+  "name": "Visa Bulletin EB-3 監控",
+  "short_name": "EB-3 排期",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7fbfd",
+  "theme_color": "#2f8fa7",
+  "icons": [
+    {
+      "src": "/assets/cute-medical-team-transparent.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

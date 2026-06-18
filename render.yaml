@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: visa-bulletin-eb3
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 web_monitor.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visa Bulletin EB-3 監控</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#2f8fa7" />
+    <link rel="stylesheet" href="/web/styles.css" />
+  </head>
+  <body>
+    <div class="fireworks" id="fireworks" aria-hidden="true"></div>
+    <div class="background-decor" aria-hidden="true">
+      <img class="flag-ribbon" src="/assets/cute-us-flag-transparent.png" alt="" />
+      <span class="flag-star star-one">★</span>
+      <span class="flag-star star-two">★</span>
+      <span class="bubble bubble-one"></span>
+      <span class="bubble bubble-two"></span>
+      <span class="bubble bubble-three"></span>
+      <span class="medical-cross cross-one"></span>
+      <span class="medical-cross cross-two"></span>
+    </div>
+    <main class="shell">
+      <section class="topbar">
+        <div class="brand-lockup">
+          <img class="nurse-badge" src="/assets/cute-medical-team-transparent.png" alt="" />
+          <div>
+          <p class="eyebrow">Visa Bulletin 護理站</p>
+          <h1>EB-3 全球排期</h1>
+          </div>
+        </div>
+        <div class="status-pill" id="connectionStatus">待命中</div>
+      </section>
+
+      <section class="message-panel" id="messagePanel">
+        <div>
+          <p class="message-kicker" id="messageKicker">排期狀態</p>
+          <h2 id="encouragementTitle">排程維持住了！</h2>
+          <p id="encouragementText">我們繼續保持希望。</p>
+        </div>
+        <div class="pulse-card" aria-hidden="true">
+          <div class="ecg-window">
+            <svg class="ecg-strip nsr-strip" viewBox="0 0 360 120" role="img">
+              <path d="M0 70 C6 67 10 67 14 70 H24 L28 82 L33 28 L38 88 L44 70 C50 70 55 66 62 63 C72 58 82 61 90 69 C97 75 106 70 114 70 H136 C142 67 146 67 150 70 H160 L164 82 L169 28 L174 88 L180 70 C186 70 191 66 198 63 C208 58 218 61 226 69 C233 75 242 70 250 70 H272 C278 67 282 67 286 70 H296 L300 82 L305 28 L310 88 L316 70 C322 70 327 66 334 63 C344 58 354 61 360 68" />
+            </svg>
+            <svg class="ecg-strip st-strip" viewBox="0 0 360 120" role="img">
+              <path d="M0 70 C4 67 7 67 10 70 H16 L19 82 L23 24 L27 86 L31 70 C35 70 38 66 43 63 C49 59 55 61 60 68 C64 72 69 70 75 70 C79 67 82 67 85 70 H91 L94 82 L98 24 L102 86 L106 70 C110 70 113 66 118 63 C124 59 130 61 135 68 C139 72 144 70 150 70 C154 67 157 67 160 70 H166 L169 82 L173 24 L177 86 L181 70 C185 70 188 66 193 63 C199 59 205 61 210 68 C214 72 219 70 225 70 C229 67 232 67 235 70 H241 L244 82 L248 24 L252 86 L256 70 C260 70 263 66 268 63 C274 59 280 61 285 68 C289 72 294 70 300 70 C304 67 307 67 310 70 H316 L319 82 L323 24 L327 86 L331 70 C335 70 338 66 343 63 C349 59 355 61 360 68" />
+            </svg>
+            <svg class="ecg-strip brady-strip" viewBox="0 0 360 120" role="img">
+              <path d="M0 70 H44 C50 70 54 67 59 64 C68 59 77 62 85 70 H104 L108 82 L114 28 L120 88 L126 70 H214 C220 70 224 67 229 64 C238 59 247 62 255 70 H274 L278 82 L284 28 L290 88 L296 70 H360" />
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <section class="snapshot">
+        <div class="metric primary">
+          <span class="label">本月公布日期</span>
+          <div class="date-bulletin-row">
+            <strong id="dateValue">--</strong>
+            <span class="bulletin-name" id="bulletinValue">--</span>
+          </div>
+          <span class="subvalue muted" id="checkedValue">上次檢查更新時間：--</span>
+        </div>
+        <div class="metric movement">
+          <span class="label">相較上個月</span>
+          <strong id="movementValue">--</strong>
+          <a class="mini-link" id="previousSourceLink" href="#" target="_blank" rel="noreferrer">比較基準：--</a>
+          <span class="pd-inline-result" id="pdResult">尚未輸入 PD。</span>
+        </div>
+      </section>
+
+      <section class="pd-panel" aria-label="優先日期計算">
+        <div>
+          <p class="section-chip">Priority Date 小筆記</p>
+          <h2>我的 PD</h2>
+          <p>輸入你的 Priority Date，頁面會幫你算離最新公布日期還差多久。</p>
+        </div>
+        <form class="pd-form" id="pdForm">
+          <label for="pdInput">Priority Date</label>
+          <div class="pd-row">
+            <input id="pdInput" name="pdInput" placeholder="例如 01AUG24 或 2024-08-01" autocomplete="off" />
+            <input id="pdDatePicker" class="date-picker" type="date" aria-label="用日曆選擇 Priority Date" />
+            <button id="savePd" type="submit">儲存 PD</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="actions" aria-label="監控操作">
+        <button id="checkNow" type="button">立即檢查</button>
+        <button id="enableNotifications" type="button">開啟瀏覽器通知</button>
+        <a id="sourceLink" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">官方來源</a>
+      </section>
+
+      <section class="feed" aria-label="最新訊息">
+        <div class="feed-head">
+          <h2>最新訊息</h2>
+          <span id="pollLabel">頁面開著時每 30 分鐘自動檢查</span>
+        </div>
+        <pre id="noticeText">等待下一次檢查。</pre>
+      </section>
+    </main>
+
+    <script src="/web/app.js"></script>
+  </body>
+</html>

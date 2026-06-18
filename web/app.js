@@ -1,0 +1,361 @@
+const CHECK_INTERVAL_MS = 30 * 60 * 1000;
+const PD_STORAGE_KEY = "visaBulletinEb3PriorityDate";
+const DEVICE_ID_STORAGE_KEY = "visaBulletinEb3DeviceId";
+
+const state = {
+  timer: null,
+  checking: false,
+  current: null,
+};
+
+const monthMap = {
+  JAN: 0,
+  FEB: 1,
+  MAR: 2,
+  APR: 3,
+  MAY: 4,
+  JUN: 5,
+  JUL: 6,
+  AUG: 7,
+  SEP: 8,
+  OCT: 9,
+  NOV: 10,
+  DEC: 11,
+};
+
+const els = {
+  connectionStatus: document.querySelector("#connectionStatus"),
+  dateValue: document.querySelector("#dateValue"),
+  movementValue: document.querySelector("#movementValue"),
+  previousSourceLink: document.querySelector("#previousSourceLink"),
+  bulletinValue: document.querySelector("#bulletinValue"),
+  checkedValue: document.querySelector("#checkedValue"),
+  noticeText: document.querySelector("#noticeText"),
+  checkNow: document.querySelector("#checkNow"),
+  enableNotifications: document.querySelector("#enableNotifications"),
+  sourceLink: document.querySelector("#sourceLink"),
+  messagePanel: document.querySelector("#messagePanel"),
+  messageKicker: document.querySelector("#messageKicker"),
+  encouragementTitle: document.querySelector("#encouragementTitle"),
+  encouragementText: document.querySelector("#encouragementText"),
+  fireworks: document.querySelector("#fireworks"),
+  pdForm: document.querySelector("#pdForm"),
+  pdInput: document.querySelector("#pdInput"),
+  pdDatePicker: document.querySelector("#pdDatePicker"),
+  pdResult: document.querySelector("#pdResult"),
+};
+
+function formatChecked(value) {
+  if (!value) return "--";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("zh-TW");
+}
+
+function setStatus(text, kind = "idle") {
+  els.connectionStatus.textContent = text;
+  els.connectionStatus.dataset.kind = kind;
+}
+
+function getDeviceId() {
+  let deviceId = localStorage.getItem(DEVICE_ID_STORAGE_KEY);
+  if (!deviceId) {
+    deviceId = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    localStorage.setItem(DEVICE_ID_STORAGE_KEY, deviceId);
+  }
+  return deviceId;
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i += 1) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+async function saveDevice({ subscription = undefined } = {}) {
+  const payload = {
+    deviceId: getDeviceId(),
+    pd: els.pdInput.value.trim(),
+  };
+  if (subscription !== undefined) {
+    payload.subscription = subscription;
+  }
+  await fetch("/api/save-device", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    throw new Error("這個瀏覽器不支援背景通知。");
+  }
+  return navigator.serviceWorker.register("/service-worker.js");
+}
+
+function parseVisaDate(value) {
+  const text = String(value || "").trim().toUpperCase();
+  const bulletin = text.match(/^(\d{2})([A-Z]{3})(\d{2})$/);
+  if (bulletin) {
+    const year = Number(bulletin[3]);
+    const fullYear = year < 70 ? 2000 + year : 1900 + year;
+    const month = monthMap[bulletin[2]];
+    if (month === undefined) return null;
+    return new Date(Date.UTC(fullYear, month, Number(bulletin[1])));
+  }
+
+  const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    return new Date(Date.UTC(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3])));
+  }
+
+  return null;
+}
+
+function toIsoDate(date) {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDuration(days) {
+  const absoluteDays = Math.abs(days);
+  const months = Math.round((absoluteDays / 30.4375) * 10) / 10;
+  return `${absoluteDays} 天，約 ${months} 個月`;
+}
+
+function updatePdResult() {
+  const pdText = els.pdInput.value.trim();
+  const cutoffText = state.current?.eb3_all_chargeability_final_action_date;
+  if (!pdText) {
+    els.pdResult.textContent = "尚未輸入 PD。";
+    return;
+  }
+
+  const pdDate = parseVisaDate(pdText);
+  const cutoffDate = parseVisaDate(cutoffText);
+  if (!pdDate) {
+    els.pdResult.textContent = "PD 格式看不懂，請用 01AUG24 或 2024-08-01。";
+    return;
+  }
+  if (!cutoffDate) {
+    els.pdResult.textContent = "目前公布值不是日期，暫時無法計算差距。";
+    return;
+  }
+
+  const diffDays = Math.round((cutoffDate - pdDate) / 86400000);
+  if (diffDays > 0) {
+    els.pdResult.textContent = `你的 PD 已早於最新公布日期 ${cutoffText}，排期看起來已經到了。恭喜，這一步很不容易。`;
+  } else if (diffDays === 0) {
+    els.pdResult.textContent = `你的 PD 剛好等於最新公布日期 ${cutoffText}。官方文字通常要求早於公布日期，建議再確認當月指引。`;
+  } else {
+    els.pdResult.textContent = `你的 PD 距離最新公布日期 ${cutoffText} 還差 ${formatDuration(diffDays)}。我們繼續盯著。`;
+  }
+}
+
+function encouragementFor(movement) {
+  const kind = movement?.kind || "same";
+  if (kind === "advanced") {
+    return {
+      tone: "advanced",
+      kicker: "排期前進",
+      title: "恭喜！又往前一步",
+      text: "恭喜又往前一步，離目標越來越近了。",
+    };
+  }
+  if (kind === "retrogressed") {
+    return {
+      tone: "retrogressed",
+      kicker: "排期倒退",
+      title: "先深呼吸，我們還在隊伍裡",
+      text: "排程倒退真的很讓人沮喪，至少我們還在隊伍裡，再撐一下，很快就會有好消息。",
+    };
+  }
+  return {
+    tone: "same",
+    kicker: "排期不變",
+    title: "排程維持住了！",
+    text: "我們繼續保持希望。",
+  };
+}
+
+function launchFireworks() {
+  els.fireworks.innerHTML = "";
+  els.fireworks.classList.add("active");
+  const colors = ["#ffcf33", "#ff6b6b", "#38bdf8", "#22c55e", "#a855f7"];
+
+  for (let i = 0; i < 34; i += 1) {
+    const spark = document.createElement("span");
+    spark.style.left = `${15 + Math.random() * 70}%`;
+    spark.style.top = `${12 + Math.random() * 34}%`;
+    spark.style.setProperty("--x", `${(Math.random() - 0.5) * 280}px`);
+    spark.style.setProperty("--y", `${80 + Math.random() * 220}px`);
+    spark.style.background = colors[i % colors.length];
+    spark.style.animationDelay = `${Math.random() * 0.35}s`;
+    els.fireworks.appendChild(spark);
+  }
+
+  window.setTimeout(() => {
+    els.fireworks.classList.remove("active");
+    els.fireworks.innerHTML = "";
+  }, 2600);
+}
+
+function renderMood(movement, shouldCelebrate = false) {
+  const mood = encouragementFor(movement);
+  document.body.dataset.mood = mood.tone;
+  els.messageKicker.textContent = mood.kicker;
+  els.encouragementTitle.textContent = mood.title;
+  els.encouragementText.textContent = mood.text;
+  if (mood.tone === "advanced" && shouldCelebrate) {
+    launchFireworks();
+  }
+}
+
+function renderState(current, { celebrate = false } = {}) {
+  if (!current) return;
+  state.current = current;
+  els.dateValue.textContent = current.eb3_all_chargeability_final_action_date || "--";
+  els.movementValue.textContent = current.movement_from_previous_bulletin?.label || "--";
+  if (current.previous_bulletin_source_url) {
+    els.previousSourceLink.href = current.previous_bulletin_source_url;
+    const previousValue = current.previous_bulletin_eb3_all_chargeability_final_action_date;
+    const previousLabel = current.previous_bulletin || "上個月公告";
+    els.previousSourceLink.textContent = previousValue
+      ? `上月：${previousValue} · ${previousLabel}`
+      : `比較基準：${previousLabel}`;
+    els.previousSourceLink.hidden = false;
+  } else {
+    els.previousSourceLink.hidden = true;
+  }
+  els.bulletinValue.textContent = current.bulletin || "--";
+  els.checkedValue.textContent = `上次檢查更新時間：${formatChecked(current.checked_at)}`;
+  if (current.source_url) {
+    els.sourceLink.href = current.source_url;
+  }
+  renderMood(current.movement_from_previous_bulletin, celebrate);
+  updatePdResult();
+}
+
+function notify(title, body) {
+  if (!("Notification" in window) || Notification.permission !== "granted") {
+    return;
+  }
+  new Notification(title, {
+    body,
+    tag: "visa-bulletin-eb3",
+  });
+}
+
+async function loadStatus() {
+  const response = await fetch("/api/status");
+  const payload = await response.json();
+  if (payload.ok) renderState(payload.state);
+}
+
+async function checkNow({ notifyBrowser = true } = {}) {
+  if (state.checking) return;
+  state.checking = true;
+  els.checkNow.disabled = true;
+  setStatus("檢查中", "busy");
+
+  try {
+    const response = await fetch("/api/check");
+    const payload = await response.json();
+    if (!payload.ok) throw new Error(payload.error || "檢查失敗");
+
+    renderState(payload.state, {
+      celebrate: payload.notice?.movement?.kind === "advanced",
+    });
+    els.noticeText.textContent = payload.notice.message;
+
+    if (payload.notice.notify && notifyBrowser) {
+      notify(payload.notice.title, payload.notice.message);
+    }
+    setStatus(payload.notice.notify ? "有更新" : "無變化", payload.notice.notify ? "updated" : "idle");
+  } catch (error) {
+    els.noticeText.textContent = `檢查失敗：${error.message}`;
+    setStatus("錯誤", "error");
+  } finally {
+    state.checking = false;
+    els.checkNow.disabled = false;
+  }
+}
+
+async function enableNotifications() {
+  if (!("Notification" in window) || !("PushManager" in window)) {
+    els.noticeText.textContent = "這個瀏覽器不支援手機推播通知。";
+    return;
+  }
+
+  const permission = await Notification.requestPermission();
+  if (permission === "granted") {
+    try {
+      const registration = await registerServiceWorker();
+      const keyResponse = await fetch("/api/vapid-public-key");
+      const keyPayload = await keyResponse.json();
+      if (!keyPayload.ok) throw new Error("讀取推播金鑰失敗");
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(keyPayload.publicKey),
+      });
+      await saveDevice({ subscription: subscription.toJSON() });
+      notify("Visa Bulletin 監控已開啟", "這台裝置已完成通知訂閱。");
+      els.noticeText.textContent = "通知已開啟。之後新月份公告或排期變動時，這台裝置會收到提醒。";
+    } catch (error) {
+      els.noticeText.textContent = `通知設定失敗：${error.message}`;
+    }
+  } else {
+    els.noticeText.textContent = "尚未開啟通知權限。";
+  }
+}
+
+els.checkNow.addEventListener("click", () => checkNow());
+els.enableNotifications.addEventListener("click", enableNotifications);
+els.pdForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  localStorage.setItem(PD_STORAGE_KEY, els.pdInput.value.trim());
+  updatePdResult();
+  saveDevice().catch(() => {
+    els.noticeText.textContent = "PD 已存在本機，但同步到通知後台失敗。";
+  });
+});
+els.pdInput.addEventListener("input", updatePdResult);
+els.pdInput.addEventListener("change", () => {
+  const parsed = parseVisaDate(els.pdInput.value);
+  if (parsed) {
+    els.pdDatePicker.value = toIsoDate(parsed);
+  }
+});
+els.pdDatePicker.addEventListener("change", () => {
+  els.pdInput.value = els.pdDatePicker.value;
+  localStorage.setItem(PD_STORAGE_KEY, els.pdInput.value.trim());
+  updatePdResult();
+  saveDevice().catch(() => {
+    els.noticeText.textContent = "PD 已存在本機，但同步到通知後台失敗。";
+  });
+});
+
+els.pdInput.value = localStorage.getItem(PD_STORAGE_KEY) || "";
+{
+  const savedPd = parseVisaDate(els.pdInput.value);
+  if (savedPd) {
+    els.pdDatePicker.value = toIsoDate(savedPd);
+  }
+}
+
+loadStatus().catch(() => {
+  els.noticeText.textContent = "讀取監控狀態失敗。";
+});
+
+registerServiceWorker().catch(() => {});
+saveDevice().catch(() => {});
+
+state.timer = window.setInterval(() => checkNow(), CHECK_INTERVAL_MS);
