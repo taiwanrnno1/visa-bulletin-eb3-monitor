@@ -190,13 +190,98 @@ body[data-mood="retrogressed"] {
   gap: 18px;
 }
 
-.nurse-badge {
+.hemi-landing {
+  --landing-x: 520px;
+  --landing-y: -128px;
+  position: relative;
   flex: 0 0 auto;
-  width: 148px;
-  height: 182px;
+  width: 168px;
+  height: 206px;
+  overflow: visible;
+  isolation: isolate;
+}
+
+.hemi-landing::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  right: -18px;
+  bottom: 8px;
+  height: 62px;
+  border-radius: 999px 999px 26px 26px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(255, 255, 255, 0.7) 18px 26px, transparent 26px 46px),
+    linear-gradient(135deg, rgba(32, 48, 65, 0.12), rgba(47, 143, 167, 0.16));
+  transform: perspective(260px) rotateX(58deg) rotateZ(-13deg);
+  transform-origin: center bottom;
+  box-shadow: 0 18px 28px rgba(36, 93, 115, 0.12);
+  opacity: 0.82;
+  z-index: -2;
+}
+
+.hemi-landing::after {
+  content: "✈︎";
+  position: absolute;
+  right: 2px;
+  top: 28px;
+  color: rgba(47, 143, 167, 0.28);
+  font-size: 22px;
+  transform: rotate(-26deg);
+  animation: runway-signal 8s ease-in-out infinite;
+  z-index: -1;
+}
+
+.nurse-badge {
+  position: relative;
+  display: block;
+  width: 166px;
+  height: 202px;
   object-fit: contain;
   object-position: center;
   filter: drop-shadow(0 16px 18px rgba(24, 30, 35, 0.16));
+  animation: hemi-landing 13s cubic-bezier(0.24, 0.72, 0.22, 1) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes hemi-landing {
+  0% {
+    opacity: 0;
+    transform: translate(var(--landing-x), var(--landing-y)) rotate(-13deg) scale(0.56);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  52%,
+  82% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(-2deg) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-18px, 16px) rotate(2deg) scale(0.98);
+  }
+}
+
+@keyframes runway-signal {
+  0%,
+  45% {
+    opacity: 0.15;
+    transform: translate(8px, -4px) rotate(-26deg);
+  }
+
+  55%,
+  82% {
+    opacity: 0.42;
+    transform: translate(0, 0) rotate(-26deg);
+  }
+
+  100% {
+    opacity: 0.12;
+    transform: translate(-8px, 5px) rotate(-26deg);
+  }
 }
 
 .eyebrow,
@@ -792,6 +877,14 @@ body[data-mood="retrogressed"] .brady-strip path {
 
 .case-heading-row h2 {
   min-width: 0;
+}
+
+.case-heading-row .compact-button {
+  min-height: 46px;
+  padding: 0 18px;
+  border-color: rgba(47, 143, 167, 0.18);
+  font-size: 15px;
+  box-shadow: 0 12px 24px rgba(36, 93, 115, 0.12);
 }
 
 .case-panel p:not(.section-chip) {
@@ -1594,6 +1687,23 @@ pre {
     gap: 12px;
   }
 
+  .hemi-landing {
+    --landing-x: 190px;
+    --landing-y: -92px;
+    width: 126px;
+    height: 154px;
+  }
+
+  .hemi-landing::before {
+    height: 48px;
+    bottom: 5px;
+  }
+
+  .nurse-badge {
+    width: 124px;
+    height: 152px;
+  }
+
   .top-actions,
   .top-action-buttons {
     justify-items: stretch;
@@ -1627,5 +1737,12 @@ pre {
   button,
   .actions a {
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nurse-badge,
+  .hemi-landing::after {
+    animation: none;
   }
 }
