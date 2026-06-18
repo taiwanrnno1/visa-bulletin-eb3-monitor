@@ -87,8 +87,11 @@
         <form class="pd-form" id="pdForm">
           <label for="pdInput">Priority Date</label>
           <div class="pd-row">
-            <input id="pdInput" name="pdInput" placeholder="例如 01AUG24 或 2024-08-01" autocomplete="off" />
-            <input id="pdDatePicker" class="date-picker" type="date" aria-label="用日曆選擇 Priority Date" />
+            <div class="pd-input-combo">
+              <input id="pdInput" name="pdInput" placeholder="例如 01AUG24 或 2024-08-01" autocomplete="off" />
+              <button id="openPdCalendar" class="calendar-trigger" type="button" aria-label="用日曆選擇 Priority Date">📅</button>
+              <input id="pdDatePicker" class="date-picker" type="date" aria-label="用日曆選擇 Priority Date" tabindex="-1" />
+            </div>
             <button id="savePd" type="submit">儲存 PD</button>
           </div>
         </form>

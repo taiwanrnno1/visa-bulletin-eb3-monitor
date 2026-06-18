@@ -49,6 +49,7 @@ const els = {
   fireworks: document.querySelector("#fireworks"),
   pdForm: document.querySelector("#pdForm"),
   pdInput: document.querySelector("#pdInput"),
+  openPdCalendar: document.querySelector("#openPdCalendar"),
   pdDatePicker: document.querySelector("#pdDatePicker"),
   pdResult: document.querySelector("#pdResult"),
 };
@@ -451,6 +452,14 @@ els.pdInput.addEventListener("change", () => {
   if (parsed) {
     els.pdDatePicker.value = toIsoDate(parsed);
   }
+});
+els.openPdCalendar?.addEventListener("click", () => {
+  if (typeof els.pdDatePicker.showPicker === "function") {
+    els.pdDatePicker.showPicker();
+    return;
+  }
+  els.pdDatePicker.focus();
+  els.pdDatePicker.click();
 });
 els.pdDatePicker.addEventListener("change", () => {
   els.pdInput.value = els.pdDatePicker.value;

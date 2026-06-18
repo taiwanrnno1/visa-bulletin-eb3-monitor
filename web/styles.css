@@ -599,7 +599,7 @@ body[data-mood="retrogressed"] .brady-strip path {
 
 .pd-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 156px auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
 }
 
@@ -620,9 +620,49 @@ input:focus {
   outline-offset: 2px;
 }
 
+.pd-input-combo {
+  position: relative;
+}
+
+.pd-input-combo input[type="text"],
+#pdInput {
+  padding-right: 58px;
+}
+
+.calendar-trigger {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  z-index: 1;
+  width: 42px;
+  min-height: 34px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--accent-strong);
+  box-shadow: none;
+  padding: 0;
+  font-size: 18px;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.calendar-trigger:hover {
+  transform: translateY(-50%);
+}
+
 .date-picker {
-  color-scheme: light;
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  z-index: 2;
+  width: 42px;
+  height: 34px;
+  min-height: 34px;
+  border: 0;
+  padding: 0;
+  opacity: 0;
   cursor: pointer;
+  transform: translateY(-50%);
 }
 
 .pd-inline-result {
