@@ -6,11 +6,11 @@ on:
       title:
         description: "通知標題"
         required: true
-        default: "號外 號外！本月EB-3排程出來了！喵～"
+        default: "🐱 好消息！EB-3 排程前進啦！喵～"
       body:
         description: "通知內容"
         required: true
-        default: "表Ａ 本月最新日期為 01 AUG 24\n相較上個月 前進 61 天，約 2.0 個月\n上個月數值：01 JUN 24"
+        default: "📅 表 A 本月最新日期：01 AUG 24\n🚀 較上個月推進 61 天（約 2.0 個月）\n📍 上個月數值：01 JUN 24\n🐾 快來看看你的優先日期是不是更接近了！"
 
 jobs:
   send:

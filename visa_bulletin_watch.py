@@ -160,6 +160,64 @@ def format_notice_date(value: object) -> str:
     return f"{match.group(1)} {match.group(2)} {match.group(3)}"
 
 
+def build_push_message(value: object, previous_value: object, movement: dict[str, object]) -> str:
+    kind = movement.get("kind")
+    days = movement.get("days")
+    months = movement.get("months")
+    value_display = format_notice_date(value)
+    previous_display = format_notice_date(previous_value)
+
+    if kind == "advanced" and isinstance(days, int):
+        return "\n".join(
+            [
+                f"📅 表 A 本月最新日期：{value_display}",
+                f"🚀 較上個月推進 {abs(days)} 天（約 {months} 個月）",
+                f"📍 上個月數值：{previous_display}",
+                "🐾 快來看看你的優先日期是不是更接近了！",
+            ]
+        )
+
+    if kind == "same":
+        return "\n".join(
+            [
+                f"📅 表 A 最新日期仍為 {value_display}",
+                "⏸️ 與上個月相比沒有前進也沒有倒退",
+                f"📍 上個月日期：{previous_display}",
+                "耐心等待，下個月再一起關注喵～ 🐾",
+            ]
+        )
+
+    if kind == "retrogressed" and isinstance(days, int):
+        return "\n".join(
+            [
+                f"📅 表 A 最新日期：{value_display}",
+                f"⬅️ 較上個月倒退 {abs(days)} 天（約 {months} 個月）",
+                f"📍 上個月日期：{previous_display}",
+                "🐾 別灰心，下個月再持續關注最新動態！",
+            ]
+        )
+
+    return "\n".join(
+        [
+            f"📅 表 A 最新日期：{value_display}",
+            f"📍 上個月日期：{previous_display}",
+            f"目前變化：{movement.get('label', '暫時無法計算')}",
+            "🐾 快來看看你的優先日期有沒有更新！",
+        ]
+    )
+
+
+def build_push_title(movement: dict[str, object]) -> str:
+    kind = movement.get("kind")
+    if kind == "advanced":
+        return "🐱 好消息！EB-3 排程前進啦！喵～"
+    if kind == "same":
+        return "🐱 EB-3 排程更新！本月維持不變喵～"
+    if kind == "retrogressed":
+        return "🐱 EB-3 排程更新！本月出現倒退喵～"
+    return "🐱 號外！號外！EB-3 排程更新啦！喵～"
+
+
 def parse_bulletin_links(html: str) -> list[BulletinLink]:
     parser = LinkParser()
     parser.feed(html)
@@ -324,34 +382,22 @@ def build_notice(
     value_changed = previous_value != value
 
     if new_bulletin:
-        lines = [
-            f"表Ａ 本月最新日期為 {format_notice_date(value)}",
-            f"相較上個月 {movement['label']}",
-        ]
-        if previous_month_value is not None and previous_month_value != value:
-            lines.append(f"上個月數值：{format_notice_date(previous_month_value)}")
         return {
             "status": "new_bulletin",
             "notify": True,
-            "title": "號外 號外！本月EB-3排程出來了！喵～",
-            "message": "\n".join(lines),
+            "title": build_push_title(movement),
+            "message": build_push_message(value, previous_month_value, movement),
             "previous_value": previous_month_value,
             "movement": movement,
             "current": current,
         }
 
     if value_changed:
-        old_display = previous_month_value if previous_month_value is not None else "沒有上個月數值"
-        lines = [
-            f"表Ａ 本月最新日期為 {format_notice_date(value)}",
-            f"相較上個月 {movement['label']}",
-            f"上個月數值：{format_notice_date(old_display)}",
-        ]
         return {
             "status": "value_changed",
             "notify": True,
-            "title": "號外 號外！本月EB-3排程出來了！喵～",
-            "message": "\n".join(lines),
+            "title": build_push_title(movement),
+            "message": build_push_message(value, previous_month_value, movement),
             "previous_value": previous_month_value,
             "movement": movement,
             "current": current,
