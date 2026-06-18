@@ -251,32 +251,6 @@ p {
   line-height: 1.65;
 }
 
-.status-pill {
-  min-width: 94px;
-  border: 1px solid rgba(47, 143, 167, 0.18);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: var(--small-shadow);
-  padding: 9px 14px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 850;
-}
-
-.status-pill::before {
-  content: "";
-  display: inline-block;
-  width: 18px;
-  height: 12px;
-  margin-right: 8px;
-  border-radius: 4px;
-  vertical-align: -1px;
-  background:
-    linear-gradient(90deg, #192f6f 0 42%, transparent 42%),
-    repeating-linear-gradient(180deg, #bf0a30 0 2px, #bf0a30 2px 4px, #fff 4px 6px, #fff 6px 8px);
-  box-shadow: 0 0 0 1px rgba(25, 47, 111, 0.12);
-}
-
 .message-panel,
 .pd-panel,
 .feed {

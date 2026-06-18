@@ -59,6 +59,7 @@ function formatChecked(value) {
 }
 
 function setStatus(text, kind = "idle") {
+  if (!els.connectionStatus) return;
   els.connectionStatus.textContent = text;
   els.connectionStatus.dataset.kind = kind;
 }
@@ -328,7 +329,7 @@ async function loadStaticStatus() {
     current = loadInitialState();
   }
   renderState(current);
-  els.noticeText.textContent = "目前是免費網頁版：可查看最新資料與儲存自己的 PD。";
+  els.noticeText.textContent = "目前可查看最新資料與儲存自己的 PD。";
   setStatus("網頁版", "idle");
 }
 
