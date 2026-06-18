@@ -167,6 +167,7 @@ body[data-mood="retrogressed"] {
   display: flex;
   align-items: center;
   gap: 18px;
+  width: 100%;
 }
 
 .hemi-landing {
@@ -174,10 +175,10 @@ body[data-mood="retrogressed"] {
   --landing-y: -118px;
   pointer-events: none;
   position: absolute;
-  left: -18px;
-  top: -38px;
-  width: 210px;
-  height: 142px;
+  left: -26px;
+  top: -16px;
+  width: 158px;
+  height: 108px;
   overflow: visible;
   z-index: 0;
 }
@@ -215,8 +216,8 @@ body[data-mood="retrogressed"] {
 .nurse-badge {
   position: relative;
   display: block;
-  width: 210px;
-  height: 142px;
+  width: 158px;
+  height: 108px;
   object-fit: contain;
   object-position: center;
   filter: drop-shadow(0 16px 18px rgba(24, 30, 35, 0.12));
@@ -301,7 +302,7 @@ h2 {
   z-index: 3;
   display: inline-flex;
   align-items: center;
-  width: min(640px, 100%);
+  width: min(560px, 100%);
 }
 
 .brand-title img {
@@ -313,21 +314,23 @@ h2 {
 .title-row {
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: end;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  min-height: 176px;
-  padding: 18px 0 4px 120px;
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  width: min(760px, 100%);
+  min-height: 150px;
+  margin: 0 auto;
+  padding: 8px 0 4px 92px;
 }
 
 .brand-bottom-row {
   position: relative;
   z-index: 4;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  width: min(860px, 100%);
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: start;
+  gap: 16px;
+  width: min(650px, 100%);
 }
 
 .byline {
@@ -335,10 +338,10 @@ h2 {
   z-index: 2;
   display: grid;
   gap: 2px;
-  max-width: 520px;
-  margin: 0 0 6px;
+  max-width: 340px;
+  margin: 0;
   color: #53677e;
-  font-size: clamp(12px, 1.8vw, 15px);
+  font-size: clamp(12px, 1.55vw, 14px);
   font-weight: 800;
   line-height: 1.35;
 }
@@ -356,25 +359,31 @@ h2 {
 .top-actions {
   display: grid;
   justify-items: start;
-  gap: 6px;
-  max-width: 390px;
+  gap: 5px;
+  max-width: 320px;
 }
 
 .top-action-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: start;
-  gap: 8px;
+  gap: 7px;
+}
+
+.top-actions button {
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 13px;
 }
 
 .ios-note {
   margin: 0;
   color: #53677e;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 850;
   line-height: 1.35;
   text-align: left;
-  max-width: 340px;
+  max-width: 300px;
 }
 
 .ios-note span {
@@ -1709,10 +1718,10 @@ pre {
   .hemi-landing {
     --landing-x: 220px;
     --landing-y: -70px;
-    left: -10px;
-    top: -20px;
-    width: 150px;
-    height: 104px;
+    left: -8px;
+    top: -8px;
+    width: 108px;
+    height: 76px;
   }
 
   .hemi-landing::before {
@@ -1721,22 +1730,23 @@ pre {
   }
 
   .nurse-badge {
-    width: 150px;
-    height: 104px;
+    width: 108px;
+    height: 76px;
   }
 
   .title-row {
-    min-height: 146px;
-    padding: 18px 0 4px 72px;
+    width: 100%;
+    min-height: 126px;
+    padding: 8px 0 4px 54px;
   }
 
   .brand-title {
-    width: min(440px, 100%);
+    width: min(420px, 100%);
   }
 
   .brand-bottom-row {
     align-items: stretch;
-    flex-direction: column;
+    grid-template-columns: 1fr;
     gap: 12px;
     width: 100%;
   }
