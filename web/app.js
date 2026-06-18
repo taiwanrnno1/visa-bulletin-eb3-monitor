@@ -1,7 +1,7 @@
 const CHECK_INTERVAL_MS = 30 * 60 * 1000;
 const PD_STORAGE_KEY = "visaBulletinEb3PriorityDate";
 const DEVICE_ID_STORAGE_KEY = "visaBulletinEb3DeviceId";
-const NTFY_TOPIC = "visa-bulletin-eb3-t6213982";
+const NTFY_TOPIC = "visa-bulletin-eb3-taiwanrnno1";
 const NTFY_URL = `https://ntfy.sh/${NTFY_TOPIC}`;
 
 const state = {

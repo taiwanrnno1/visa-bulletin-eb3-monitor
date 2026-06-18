@@ -30,17 +30,17 @@ The easiest shared phone notification channel is ntfy. This project uses the
 free topic:
 
 ```text
-visa-bulletin-eb3-t6213982
+visa-bulletin-eb3-taiwanrnno1
 ```
 
 1. Install the ntfy app on your phone.
-2. Subscribe to `visa-bulletin-eb3-t6213982`.
+2. Subscribe to `visa-bulletin-eb3-taiwanrnno1`.
 3. Friends can subscribe to the same topic to receive the same monthly notices.
 
 For local testing, put that same topic in a local `.env` file:
 
 ```sh
-VISA_BULLETIN_NTFY_TOPIC=visa-bulletin-eb3-t6213982
+VISA_BULLETIN_NTFY_TOPIC=visa-bulletin-eb3-taiwanrnno1
 ```
 
 To send a sample notification:
@@ -65,7 +65,7 @@ After pushing this repo to GitHub:
 3. Choose branch `main` and folder `/(root)`, then click `Save`.
 4. Go to `Settings` -> `Secrets and variables` -> `Actions`.
 5. Add a repository secret named `NTFY_TOPIC`.
-6. Set the value to `visa-bulletin-eb3-t6213982`.
+6. Set the value to `visa-bulletin-eb3-taiwanrnno1`.
 7. Go to the `Actions` tab, open `Check Visa Bulletin`, and run it once with
    `Run workflow`.
 
