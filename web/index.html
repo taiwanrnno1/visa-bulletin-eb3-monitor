@@ -28,7 +28,7 @@
         <div class="brand-lockup">
           <img class="nurse-badge" src="../assets/heimi-cat-transparent.png" alt="" />
           <div>
-          <p class="eyebrow">Visa Bulletin 黑咪即時通</p>
+          <p class="eyebrow">🐱 Visa Bulletin 黑咪即時通</p>
           <div class="title-row">
             <h1>EB-3 全球排期</h1>
             <p class="byline">
@@ -43,10 +43,10 @@
         </div>
         <div class="top-actions" aria-label="通知操作">
           <div class="top-action-buttons">
-            <button id="enableNotifications" type="button">開啟瀏覽器通知</button>
-            <button id="openGuide" class="secondary-action" type="button">詳細使用說明</button>
+            <button id="enableNotifications" type="button">📣 開啟瀏覽器通知</button>
+            <button id="openGuide" class="secondary-action" type="button">🐾 詳細使用說明</button>
           </div>
-          <p class="ios-note">iPhone 用戶請先詳閱說明，將網頁加入主畫面方可開啟通知。</p>
+          <p class="ios-note">🐾 iPhone 用戶請先詳閱說明，將網頁加入主畫面方可開啟通知。</p>
         </div>
       </section>
 
@@ -74,8 +74,8 @@
       <section class="snapshot">
         <div class="metric primary">
           <div class="metric-label-row">
-            <span class="label">本月公布日期</span>
-            <a id="sourceLink" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">官方來源</a>
+            <span class="label">📅 本月公布日期</span>
+            <a id="sourceLink" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">官方來源 🐾</a>
           </div>
           <div class="date-bulletin-row">
             <a class="date-link" id="dateValue" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">--</a>
@@ -84,7 +84,7 @@
           <span class="subvalue muted" id="checkedValue">最後更新時間 UTC/GMT +08:00：--</span>
         </div>
         <div class="metric movement">
-          <span class="label">相較上個月</span>
+          <span class="label">📣 相較上個月</span>
           <strong id="movementValue">--</strong>
           <a class="mini-link" id="previousSourceLink" href="#" target="_blank" rel="noreferrer">比較基準：--</a>
         </div>
@@ -94,9 +94,9 @@
 
       <section class="pd-panel" aria-label="優先日期計算">
         <div>
-          <p class="section-chip">Priority Date 小筆記</p>
+          <p class="section-chip">🐾 Priority Date 小筆記</p>
           <h2>我的 PD</h2>
-          <p>輸入你的 Priority Date，頁面會幫你算離最新公布日期還差多久。</p>
+          <p>輸入你的 Priority Date，黑咪會幫你算離最新公布日期還差多久喵～</p>
         </div>
         <form class="pd-form" id="pdForm">
           <label for="pdInput">Priority Date</label>
@@ -106,17 +106,17 @@
               <button id="openPdCalendar" class="calendar-trigger" type="button" aria-label="用日曆選擇 Priority Date">📅</button>
               <input id="pdDatePicker" class="date-picker" type="date" aria-label="用日曆選擇 Priority Date" tabindex="-1" />
             </div>
-            <button id="savePd" type="submit">儲存 PD</button>
+            <button id="savePd" type="submit">🐾 儲存 PD</button>
           </div>
         </form>
       </section>
 
       <section class="feed" aria-label="最新訊息">
         <div class="feed-head">
-          <h2>最新訊息</h2>
-          <span id="pollLabel">後台每 1 小時自動檢查</span>
+          <h2>📣 最新訊息</h2>
+          <span id="pollLabel">黑咪每 1 小時自動巡邏一次 🐾</span>
         </div>
-        <pre id="noticeText">等待下一次檢查。</pre>
+        <pre id="noticeText">黑咪正在等下一次檢查喵～</pre>
       </section>
     </main>
 
@@ -124,11 +124,11 @@
       <div class="guide-backdrop" data-close-guide></div>
       <section class="guide-dialog" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
         <button class="guide-close" type="button" aria-label="關閉使用說明" data-close-guide>×</button>
-        <p class="section-chip">通知教學</p>
+        <p class="section-chip">🐾 通知教學</p>
         <h2 id="guideTitle">詳細使用說明</h2>
         <div class="guide-grid">
           <article>
-            <h3>iPhone / iOS</h3>
+            <h3>📱 iPhone / iOS</h3>
             <ol>
               <li>用 Safari 打開正式網站。</li>
               <li>點分享按鈕，選「加入主畫面」。</li>
@@ -139,7 +139,7 @@
             <p>如果看到 404，請刪掉舊的主畫面圖示，再重新加入一次。</p>
           </article>
           <article>
-            <h3>Android</h3>
+            <h3>🤖 Android</h3>
             <ol>
               <li>用 Chrome 打開正式網站。</li>
               <li>按「開啟瀏覽器通知」。</li>
@@ -157,7 +157,7 @@
       <div class="guide-backdrop" data-close-pd-modal></div>
       <section class="guide-dialog pd-dialog" role="dialog" aria-modal="true" aria-labelledby="pdModalTitle">
         <button class="guide-close" type="button" aria-label="關閉 PD 提醒" data-close-pd-modal>×</button>
-        <p class="section-chip">PD 小提醒</p>
+        <p class="section-chip">🐾 PD 小提醒</p>
         <div class="pd-modal-heading">
           <h2 id="pdModalTitle">我們幫你算好了 喵～</h2>
           <img src="../assets/heimi-face-modal.png" alt="" />

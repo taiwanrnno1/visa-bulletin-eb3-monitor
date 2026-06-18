@@ -203,12 +203,12 @@ function buildPdMessage() {
 
   const diffDays = Math.round((cutoffDate - pdDate) / 86400000);
   if (diffDays > 0) {
-    return `你的 PD 已早於最新公布日期 ${cutoffText}，排期看起來已經到了。恭喜，這一步很不容易。`;
+    return `🐾 你的 PD 已早於最新公布日期 ${cutoffText}，排期看起來已經到了。恭喜喵～這一步很不容易。`;
   }
   if (diffDays === 0) {
-    return `你的 PD 剛好等於最新公布日期 ${cutoffText}。官方文字通常要求早於公布日期，建議再確認當月指引。`;
+    return `📅 你的 PD 剛好等於最新公布日期 ${cutoffText}。官方文字通常要求早於公布日期，建議再確認當月指引喵～`;
   }
-  return `你的 PD 距離最新公布日期 ${cutoffText} 還差 ${formatDuration(diffDays)}。我們繼續盯著。`;
+  return `🐾 你的 PD 距離最新公布日期 ${cutoffText} 還差 ${formatDuration(diffDays)}。黑咪陪你繼續盯著喵～`;
 }
 
 function updatePdResult() {
@@ -223,24 +223,24 @@ function encouragementFor(movement) {
   if (kind === "advanced") {
     return {
       tone: "advanced",
-      kicker: "排期前進",
-      title: "恭喜！又往前一步",
-      text: "恭喜又往前一步，離目標越來越近了。",
+      kicker: "🚀 排期前進",
+      title: "恭喜！又往前一步喵～",
+      text: "恭喜又往前一步，離目標越來越近了。黑咪幫你放煙火！",
     };
   }
   if (kind === "retrogressed") {
     return {
       tone: "retrogressed",
-      kicker: "排期倒退",
-      title: "先深呼吸，我們還在隊伍裡",
-      text: "排程倒退真的很讓人沮喪，至少我們還在隊伍裡，再撐一下，很快就會有好消息。",
+      kicker: "⬅️ 排期倒退",
+      title: "先深呼吸，我們還在隊伍裡喵",
+      text: "排程倒退真的很讓人沮喪，至少我們還在隊伍裡。黑咪陪你再撐一下，等下個好消息。",
     };
   }
   return {
     tone: "same",
-    kicker: "排期不變",
+    kicker: "⏸️ 排期不變",
     title: "排程維持住了！",
-    text: "我們繼續保持希望。",
+    text: "沒有前進也沒有倒退，黑咪先按住希望，陪你等下個月喵～",
   };
 }
 
@@ -298,7 +298,7 @@ function renderState(current, { celebrate = false } = {}) {
     els.previousSourceLink.hidden = true;
   }
   els.bulletinValue.textContent = current.bulletin || "--";
-  els.checkedValue.textContent = `最後更新時間 UTC/GMT +08:00：${formatChecked(current.checked_at)}`;
+  els.checkedValue.textContent = `🕒 最後更新時間 UTC/GMT +08:00：${formatChecked(current.checked_at)}`;
   renderMood(current.movement_from_previous_bulletin, celebrate);
   updatePdResult();
 }
@@ -370,7 +370,7 @@ async function loadStaticStatus() {
     current = loadInitialState();
   }
   renderState(current);
-  els.noticeText.textContent = "目前可查看最新資料與儲存自己的 PD。";
+  els.noticeText.textContent = "🐱 目前可查看最新資料與儲存自己的 PD。黑咪會持續巡邏喵～";
   setStatus("網頁版", "idle");
 }
 
@@ -386,7 +386,7 @@ async function checkNow({ notifyBrowser = true } = {}) {
   if (state.checking) return;
   if (!state.backendAvailable) {
     await loadStatus();
-    els.noticeText.textContent = "GitHub Pages 免費版無法即時執行後台檢查；最新資料會由自動流程更新到這個頁面。";
+    els.noticeText.textContent = "🐾 GitHub Pages 免費版無法即時執行後台檢查；最新資料會由自動流程更新到這個頁面。";
     return;
   }
   state.checking = true;
@@ -447,8 +447,8 @@ async function enableNotifications() {
       } else {
         await subscribeWithWorker(subscription.toJSON());
       }
-      notify("Visa Bulletin 監控已開啟", "這台裝置已完成通知訂閱。");
-      els.noticeText.textContent = "通知已開啟。之後新月份公告或排期變動時，這台裝置會收到提醒。";
+      notify("黑咪即時通已開啟", "這台裝置已完成通知訂閱喵～");
+      els.noticeText.textContent = "📣 通知已開啟。之後新月份公告或排期變動時，這台裝置會收到黑咪提醒喵～";
     } catch (error) {
       els.noticeText.textContent = `通知設定失敗：${error.message}`;
     }

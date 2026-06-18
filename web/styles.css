@@ -76,6 +76,28 @@ body[data-mood="retrogressed"] {
   line-height: 1;
 }
 
+.background-decor::before,
+.background-decor::after {
+  position: absolute;
+  color: rgba(47, 143, 167, 0.18);
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.background-decor::before {
+  content: "🐾";
+  left: 20%;
+  top: 18%;
+  transform: rotate(-16deg);
+}
+
+.background-decor::after {
+  content: "🐾";
+  right: 10%;
+  bottom: 16%;
+  transform: rotate(18deg);
+}
+
 .star-one {
   left: 14%;
   top: 42px;
@@ -215,6 +237,13 @@ h1 {
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85);
 }
 
+h1::after {
+  content: " 🐾";
+  color: var(--accent);
+  font-size: 0.38em;
+  vertical-align: 0.36em;
+}
+
 .title-row {
   display: flex;
   align-items: end;
@@ -306,6 +335,16 @@ p {
   height: 220px;
   border-radius: 50%;
   background: rgba(255, 229, 236, 0.8);
+}
+
+.message-panel::after {
+  content: "🐾";
+  position: absolute;
+  left: 28px;
+  bottom: 18px;
+  color: rgba(47, 143, 167, 0.2);
+  font-size: 28px;
+  transform: rotate(-16deg);
 }
 
 body[data-mood="advanced"] .message-panel {
@@ -523,14 +562,35 @@ body[data-mood="retrogressed"] .brady-strip path {
   background: rgba(223, 244, 255, 0.82);
 }
 
+.metric::before {
+  content: "🐾";
+  position: absolute;
+  right: 18px;
+  bottom: 14px;
+  z-index: 0;
+  color: rgba(47, 143, 167, 0.16);
+  font-size: 26px;
+  transform: rotate(18deg);
+}
+
 .metric.primary {
   background: linear-gradient(160deg, #e9f8ff, #ffffff);
   border-color: rgba(47, 143, 167, 0.24);
 }
 
+.metric.primary::before {
+  content: "📅";
+  color: rgba(47, 143, 167, 0.18);
+}
+
 .metric.movement {
   background: linear-gradient(160deg, #fff4df, #ffffff);
   border-color: rgba(200, 137, 45, 0.2);
+}
+
+.metric.movement::before {
+  content: "📣";
+  color: rgba(200, 137, 45, 0.2);
 }
 
 .label {
@@ -643,12 +703,24 @@ body[data-mood="retrogressed"] .brady-strip path {
 }
 
 .pd-panel {
+  position: relative;
   display: grid;
   grid-template-columns: 0.9fr 1.3fr;
   gap: 18px;
   align-items: end;
   margin: 18px 0;
   padding: 22px;
+  overflow: hidden;
+}
+
+.pd-panel::after {
+  content: "🐾";
+  position: absolute;
+  left: 24px;
+  bottom: 14px;
+  color: rgba(248, 169, 189, 0.34);
+  font-size: 30px;
+  transform: rotate(-18deg);
 }
 
 .pd-form label {
@@ -745,6 +817,16 @@ input:focus {
   font-weight: 900;
   font-size: clamp(20px, 3vw, 28px);
   line-height: 1.55;
+  overflow: hidden;
+}
+
+.pd-result-card::after {
+  content: "🐱";
+  position: absolute;
+  right: 18px;
+  bottom: 10px;
+  color: rgba(47, 143, 167, 0.16);
+  font-size: 30px;
 }
 
 .pd-result-card[hidden] {
@@ -800,7 +882,18 @@ button:disabled {
 }
 
 .feed {
+  position: relative;
   overflow: hidden;
+}
+
+.feed::before {
+  content: "🐾";
+  position: absolute;
+  right: 20px;
+  bottom: 16px;
+  color: rgba(47, 143, 167, 0.14);
+  font-size: 34px;
+  transform: rotate(15deg);
 }
 
 .feed-head {
@@ -819,6 +912,8 @@ button:disabled {
 }
 
 pre {
+  position: relative;
+  z-index: 1;
   margin: 0;
   min-height: 170px;
   padding: 20px;
