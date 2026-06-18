@@ -1,0 +1,51 @@
+name: Send Push Message
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: "通知標題"
+        required: true
+        default: "Visa Bulletin EB-3 監控"
+      body:
+        description: "通知內容"
+        required: true
+        default: "這是一則手動群發通知。"
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send browser push message
+        env:
+          WORKER_BROADCAST_URL: ${{ secrets.WORKER_BROADCAST_URL }}
+          WORKER_BROADCAST_SECRET: ${{ secrets.WORKER_BROADCAST_SECRET }}
+          PUSH_TITLE: ${{ inputs.title }}
+          PUSH_BODY: ${{ inputs.body }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          url = os.environ["WORKER_BROADCAST_URL"]
+          secret = os.environ["WORKER_BROADCAST_SECRET"]
+          payload = {
+              "notice": {
+                  "title": os.environ["PUSH_TITLE"],
+                  "message": os.environ["PUSH_BODY"],
+                  "current": {},
+              }
+          }
+          request = urllib.request.Request(
+              url,
+              data=json.dumps(payload).encode("utf-8"),
+              method="POST",
+              headers={
+                  "Authorization": f"Bearer {secret}",
+                  "Content-Type": "application/json; charset=utf-8",
+              },
+          )
+          with urllib.request.urlopen(request, timeout=45) as response:
+              print(response.read().decode("utf-8"))
+          PY
