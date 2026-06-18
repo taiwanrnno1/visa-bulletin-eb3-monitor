@@ -233,13 +233,13 @@ function encouragementFor(movement) {
       tone: "retrogressed",
       kicker: "⬅️ 排期倒退",
       title: "先深呼吸，我們還在隊伍裡喵",
-      text: "排程倒退真的很讓人沮喪，至少我們還在隊伍裡。黑咪陪你再撐一下，等下個好消息。",
+      text: "排期倒退真的很讓人沮喪，至少我們還在隊伍裡。黑咪陪你再撐一下，等下個好消息。",
     };
   }
   return {
     tone: "same",
     kicker: "⏸️ 排期不變",
-    title: "排程維持住了！",
+    title: "排期維持住了！",
     text: "沒有前進也沒有倒退，黑咪先按住希望，陪你等下個月喵～",
   };
 }

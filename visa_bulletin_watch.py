@@ -173,7 +173,7 @@ def build_push_message(value: object, previous_value: object, movement: dict[str
                 f"📅 表 A 本月最新日期：{value_display}",
                 f"🚀 較上個月推進 {abs(days)} 天（約 {months} 個月）",
                 f"📍 上個月數值：{previous_display}",
-                "🐾 快來看看你的優先日期是不是更接近了！",
+                "🐾 快來看看你的 Priority Date 是不是更接近了！",
             ]
         )
 
@@ -202,7 +202,7 @@ def build_push_message(value: object, previous_value: object, movement: dict[str
             f"📅 表 A 最新日期：{value_display}",
             f"📍 上個月日期：{previous_display}",
             f"目前變化：{movement.get('label', '暫時無法計算')}",
-            "🐾 快來看看你的優先日期有沒有更新！",
+            "🐾 快來看看你的 Priority Date 有沒有更新！",
         ]
     )
 
@@ -210,12 +210,12 @@ def build_push_message(value: object, previous_value: object, movement: dict[str
 def build_push_title(movement: dict[str, object]) -> str:
     kind = movement.get("kind")
     if kind == "advanced":
-        return "🐱 好消息！EB-3 排程前進啦！喵～"
+        return "🐱 好消息！EB-3 排期前進啦！喵～"
     if kind == "same":
-        return "🐱 EB-3 排程更新！本月維持不變喵～"
+        return "🐱 EB-3 排期更新！本月維持不變喵～"
     if kind == "retrogressed":
-        return "🐱 EB-3 排程更新！本月出現倒退喵～"
-    return "🐱 號外！號外！EB-3 排程更新啦！喵～"
+        return "🐱 EB-3 排期更新！本月出現倒退喵～"
+    return "🐱 號外！號外！EB-3 排期更新啦！喵～"
 
 
 def parse_bulletin_links(html: str) -> list[BulletinLink]:
