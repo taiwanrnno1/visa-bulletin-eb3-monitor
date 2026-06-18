@@ -38,6 +38,8 @@ const els = {
   noticeText: document.querySelector("#noticeText"),
   checkNow: document.querySelector("#checkNow"),
   enableNotifications: document.querySelector("#enableNotifications"),
+  openGuide: document.querySelector("#openGuide"),
+  guideModal: document.querySelector("#guideModal"),
   ntfyLink: document.querySelector("#ntfyLink"),
   sourceLink: document.querySelector("#sourceLink"),
   messagePanel: document.querySelector("#messagePanel"),
@@ -294,6 +296,16 @@ function notify(title, body) {
   });
 }
 
+function openGuide() {
+  els.guideModal?.classList.add("open");
+  els.guideModal?.setAttribute("aria-hidden", "false");
+}
+
+function closeGuide() {
+  els.guideModal?.classList.remove("open");
+  els.guideModal?.setAttribute("aria-hidden", "true");
+}
+
 async function loadStatus() {
   if (isStaticSite()) {
     state.backendAvailable = false;
@@ -418,6 +430,13 @@ async function enableNotifications() {
 
 els.checkNow?.addEventListener("click", () => checkNow());
 els.enableNotifications?.addEventListener("click", enableNotifications);
+els.openGuide?.addEventListener("click", openGuide);
+document.querySelectorAll("[data-close-guide]").forEach((item) => {
+  item.addEventListener("click", closeGuide);
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeGuide();
+});
 els.pdForm.addEventListener("submit", (event) => {
   event.preventDefault();
   localStorage.setItem(PD_STORAGE_KEY, els.pdInput.value.trim());

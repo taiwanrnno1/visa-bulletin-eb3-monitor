@@ -96,6 +96,7 @@
 
       <section class="actions" aria-label="監控操作">
         <button id="enableNotifications" type="button">開啟瀏覽器通知</button>
+        <button id="openGuide" class="secondary-action" type="button">詳細使用說明</button>
         <a id="sourceLink" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">官方來源</a>
       </section>
 
@@ -107,6 +108,39 @@
         <pre id="noticeText">等待下一次檢查。</pre>
       </section>
     </main>
+
+    <div class="guide-modal" id="guideModal" aria-hidden="true">
+      <div class="guide-backdrop" data-close-guide></div>
+      <section class="guide-dialog" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
+        <button class="guide-close" type="button" aria-label="關閉使用說明" data-close-guide>×</button>
+        <p class="section-chip">通知教學</p>
+        <h2 id="guideTitle">詳細使用說明</h2>
+        <div class="guide-grid">
+          <article>
+            <h3>iPhone / iOS</h3>
+            <ol>
+              <li>用 Safari 打開正式網站。</li>
+              <li>點分享按鈕，選「加入主畫面」。</li>
+              <li>從主畫面打開 EB-3 排期。</li>
+              <li>按「開啟瀏覽器通知」，再按允許。</li>
+              <li>之後有新月份公告，就會跳手機通知。</li>
+            </ol>
+            <p>如果看到 404，請刪掉舊的主畫面圖示，再重新加入一次。</p>
+          </article>
+          <article>
+            <h3>Android</h3>
+            <ol>
+              <li>用 Chrome 打開正式網站。</li>
+              <li>按「開啟瀏覽器通知」。</li>
+              <li>跳出權限視窗時按允許。</li>
+              <li>可以從 Chrome 選單加入主畫面，之後更方便打開。</li>
+              <li>新月份公告時，手機會收到通知。</li>
+            </ol>
+            <p>如果沒有跳通知，請到 Chrome 網站設定確認通知權限是允許。</p>
+          </article>
+        </div>
+      </section>
+    </div>
 
     <script id="initialVisaState" type="application/json">
       {
