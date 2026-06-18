@@ -23,6 +23,8 @@ jobs:
       - name: Check official Visa Bulletin
         env:
           VISA_BULLETIN_NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          WORKER_BROADCAST_URL: ${{ secrets.WORKER_BROADCAST_URL }}
+          WORKER_BROADCAST_SECRET: ${{ secrets.WORKER_BROADCAST_SECRET }}
         run: python github_action_check.py
 
       - name: Commit updated bulletin state

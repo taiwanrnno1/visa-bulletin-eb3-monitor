@@ -10,7 +10,7 @@ self.addEventListener("push", (event) => {
   let payload = {
     title: "Visa Bulletin EB-3 監控",
     body: "排期有新的更新。",
-    url: "/",
+    url: "./",
   };
 
   if (event.data) {
@@ -24,16 +24,16 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,
-      icon: "/assets/cute-medical-team-transparent.png",
-      badge: "/assets/cute-medical-team-transparent.png",
-      data: { url: payload.url || "/" },
+      icon: "assets/cute-medical-team-transparent.png",
+      badge: "assets/cute-medical-team-transparent.png",
+      data: { url: payload.url || "./" },
     })
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url || "/";
+  const url = event.notification.data?.url || "./";
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       for (const client of clients) {

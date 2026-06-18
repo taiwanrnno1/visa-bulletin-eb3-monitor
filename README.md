@@ -69,6 +69,39 @@ After pushing this repo to GitHub:
 7. Go to the `Actions` tab, open `Check Visa Bulletin`, and run it once with
    `Run workflow`.
 
+## Optional browser push with Cloudflare Workers
+
+This is the free native browser-notification option. It stores only browser push
+subscriptions, not each person's Priority Date.
+
+Cloudflare Worker files live in `worker/`.
+
+1. Create a Cloudflare Workers KV namespace.
+2. Put the KV namespace id into `worker/wrangler.toml`.
+3. Deploy the Worker with Wrangler.
+4. Add Worker secrets:
+
+```sh
+VAPID_PRIVATE_JWK
+BROADCAST_SECRET
+```
+
+5. Add GitHub Actions secrets:
+
+```sh
+WORKER_BROADCAST_URL
+WORKER_BROADCAST_SECRET
+```
+
+`WORKER_BROADCAST_URL` should look like:
+
+```text
+https://YOUR_WORKER_URL/api/broadcast
+```
+
+After the Worker URL is known, set `PUSH_WORKER_BASE` in `web/app.js` to that
+Worker URL and push the site again.
+
 ## Web dashboard
 
 Run the local web dashboard with:

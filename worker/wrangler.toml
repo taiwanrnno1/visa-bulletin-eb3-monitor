@@ -1,0 +1,12 @@
+name = "visa-bulletin-eb3-push"
+main = "src/worker.js"
+compatibility_date = "2026-06-01"
+
+kv_namespaces = [
+  { binding = "PUSH_SUBSCRIPTIONS", id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID" }
+]
+
+[vars]
+ALLOWED_ORIGIN = "https://taiwanrnno1.github.io"
+SITE_URL = "https://taiwanrnno1.github.io/visa-bulletin-eb3-monitor/"
+VAPID_PUBLIC_KEY = "BKz58cBwM4HV8J8uIseGZQWj6Myw-bmuYkvYulT38R0jWZAkbUqKUujyRPTKfpmEWHlgHApkeWdj3dgx9DAO2ec"

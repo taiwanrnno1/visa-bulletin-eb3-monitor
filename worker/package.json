@@ -1,0 +1,13 @@
+{
+  "name": "visa-bulletin-eb3-push-worker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "generate:vapid": "node scripts/generate-vapid.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

@@ -1,6 +1,8 @@
 const CHECK_INTERVAL_MS = 30 * 60 * 1000;
 const PD_STORAGE_KEY = "visaBulletinEb3PriorityDate";
 const DEVICE_ID_STORAGE_KEY = "visaBulletinEb3DeviceId";
+const WORKER_BASE_STORAGE_KEY = "visaBulletinEb3WorkerBase";
+const PUSH_WORKER_BASE = "";
 const NTFY_TOPIC = "visa-bulletin-eb3-taiwanrnno1";
 const NTFY_URL = `https://ntfy.sh/${NTFY_TOPIC}`;
 
@@ -81,6 +83,10 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
+function pushWorkerBase() {
+  return (localStorage.getItem(WORKER_BASE_STORAGE_KEY) || PUSH_WORKER_BASE).replace(/\/+$/, "");
+}
+
 async function saveDevice({ subscription = undefined } = {}) {
   if (!state.backendAvailable) return;
   const payload = {
@@ -95,6 +101,30 @@ async function saveDevice({ subscription = undefined } = {}) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+}
+
+async function subscribeWithWorker(subscription) {
+  const base = pushWorkerBase();
+  if (!base) {
+    throw new Error("尚未設定 Cloudflare Worker 網址。");
+  }
+  const response = await fetch(`${base}/api/subscribe`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subscription }),
+  });
+  const payload = await response.json();
+  if (!payload.ok) {
+    throw new Error(payload.error || "訂閱失敗");
+  }
+}
+
+async function getVapidPublicKey() {
+  const base = pushWorkerBase();
+  const response = await fetch(base ? `${base}/api/vapid-public-key` : "/api/vapid-public-key");
+  const payload = await response.json();
+  if (!payload.ok) throw new Error("讀取推播金鑰失敗");
+  return payload.publicKey;
 }
 
 async function registerServiceWorker() {
@@ -275,10 +305,12 @@ async function loadStatus() {
     const response = await fetch("../visa_bulletin_state.json");
     const current = await response.json();
     renderState(current);
-    els.enableNotifications.textContent = "查看手機通知設定";
+    els.enableNotifications.textContent = pushWorkerBase() ? "開啟瀏覽器通知" : "查看手機通知設定";
     els.ntfyLink.href = NTFY_URL;
-    els.ntfyLink.hidden = false;
-    els.noticeText.textContent = `目前是免費網頁版：可查看最新資料與儲存自己的 PD。\n手機通知使用 ntfy 免費頻道：${NTFY_TOPIC}`;
+    els.ntfyLink.hidden = Boolean(pushWorkerBase());
+    els.noticeText.textContent = pushWorkerBase()
+      ? "目前是免費網頁版：可查看最新資料、儲存自己的 PD，也可以開啟瀏覽器通知。"
+      : `目前是免費網頁版：可查看最新資料與儲存自己的 PD。\n手機通知使用 ntfy 免費頻道：${NTFY_TOPIC}`;
     setStatus("網頁版", "idle");
   }
 }
@@ -318,7 +350,7 @@ async function checkNow({ notifyBrowser = true } = {}) {
 }
 
 async function enableNotifications() {
-  if (!state.backendAvailable) {
+  if (!state.backendAvailable && !pushWorkerBase()) {
     els.noticeText.textContent = `手機通知設定：\n1. 手機安裝 ntfy App。\n2. 新增訂閱 topic：${NTFY_TOPIC}\n3. 朋友也訂閱同一個 topic，就會一起收到每月公告通知。\n\n訂閱網址：${NTFY_URL}`;
     window.open(NTFY_URL, "_blank", "noopener,noreferrer");
     return;
@@ -332,14 +364,17 @@ async function enableNotifications() {
   if (permission === "granted") {
     try {
       const registration = await registerServiceWorker();
-      const keyResponse = await fetch("/api/vapid-public-key");
-      const keyPayload = await keyResponse.json();
-      if (!keyPayload.ok) throw new Error("讀取推播金鑰失敗");
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(keyPayload.publicKey),
-      });
-      await saveDevice({ subscription: subscription.toJSON() });
+      const publicKey = await getVapidPublicKey();
+      const subscription = await registration.pushManager.getSubscription()
+        || await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        });
+      if (state.backendAvailable && !pushWorkerBase()) {
+        await saveDevice({ subscription: subscription.toJSON() });
+      } else {
+        await subscribeWithWorker(subscription.toJSON());
+      }
       notify("Visa Bulletin 監控已開啟", "這台裝置已完成通知訂閱。");
       els.noticeText.textContent = "通知已開啟。之後新月份公告或排期變動時，這台裝置會收到提醒。";
     } catch (error) {
