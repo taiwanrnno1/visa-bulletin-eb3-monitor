@@ -14,9 +14,6 @@
   <body>
     <div class="fireworks" id="fireworks" aria-hidden="true"></div>
     <div class="background-decor" aria-hidden="true">
-      <img class="flag-ribbon" src="../assets/hemisayhi.png" alt="" />
-      <span class="flag-star star-one">★</span>
-      <span class="flag-star star-two">★</span>
       <span class="bubble bubble-one"></span>
       <span class="bubble bubble-two"></span>
       <span class="bubble bubble-three"></span>
@@ -34,25 +31,27 @@
             <h1 class="brand-title">
               <img src="../assets/news-title.png" alt="Visa Bulletin EB-3 台灣排期 黑咪快報" />
             </h1>
-            <p class="byline">
-              <span>
-                by 美國RN Louis 桑 聯合
-                <a href="https://www.instagram.com/im_np_hello?utm_source=ig_web_button_share_sheet&amp;igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noreferrer">阿酸學姊</a>
-              </span>
-              <span>歡迎追蹤學姊IG關注 美加RN大小事 攏底加！</span>
-            </p>
+            <div class="brand-bottom-row">
+              <p class="byline">
+                <span>
+                  by 美國RN Louis 桑 聯合
+                  <a href="https://www.instagram.com/im_np_hello?utm_source=ig_web_button_share_sheet&amp;igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noreferrer">阿酸學姊</a>
+                </span>
+                <span>歡迎追蹤學姊IG關注 美加RN大小事 攏底加！</span>
+              </p>
+              <div class="top-actions" aria-label="通知操作">
+                <div class="top-action-buttons">
+                  <button id="enableNotifications" type="button">📣 開啟瀏覽器通知</button>
+                  <button id="openGuide" class="secondary-action" type="button">🐾 詳細使用說明</button>
+                </div>
+                <p class="ios-note">
+                  <span>🐾 iPhone 用戶請先詳閱說明</span>
+                  <span>將網頁加入主畫面方可開啟通知。</span>
+                </p>
+              </div>
+            </div>
           </div>
           </div>
-        </div>
-        <div class="top-actions" aria-label="通知操作">
-          <div class="top-action-buttons">
-            <button id="enableNotifications" type="button">📣 開啟瀏覽器通知</button>
-            <button id="openGuide" class="secondary-action" type="button">🐾 詳細使用說明</button>
-          </div>
-          <p class="ios-note">
-            <span>🐾 iPhone 用戶請先詳閱說明</span>
-            <span>將網頁加入主畫面方可開啟通知。</span>
-          </p>
         </div>
       </section>
 
@@ -146,7 +145,7 @@
         </div>
         <p class="history-intro" id="historyInsight">標籤上排是公布月份，下排是當月表 A PD 更新到哪一天；黑咪只標重要轉折點，線條保留完整走勢喵～</p>
         <div class="chart-wrap">
-          <svg id="historyChart" viewBox="0 0 640 220" role="img" aria-label="EB-3 排期歷史走勢圖"></svg>
+          <svg id="historyChart" viewBox="0 0 640 260" role="img" aria-label="EB-3 排期歷史走勢圖"></svg>
         </div>
         <div class="history-highlights" id="historyHighlights"></div>
         <div class="history-footer">

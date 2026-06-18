@@ -302,7 +302,7 @@ function bulletinMonthLabel(item) {
 function historyPointLabel(item) {
   return {
     bulletin: bulletinMonthLabel(item),
-    pd: `PD 到 ${item.value}`,
+    pd: item.value,
   };
 }
 
@@ -439,14 +439,14 @@ function buildHistoryHighlights(items) {
     cards.push({
       icon: "🚀",
       title: "最大前進",
-      text: `${bulletinMonthLabel(items[biggestAdvance.index])} · PD 到 ${items[biggestAdvance.index].value}`,
+      text: `${bulletinMonthLabel(items[biggestAdvance.index])} · ${items[biggestAdvance.index].value}`,
     });
   }
   if (biggestRetro) {
     cards.push({
       icon: "⬅️",
       title: "明顯倒退",
-      text: `${bulletinMonthLabel(items[biggestRetro.index])} · PD 到 ${items[biggestRetro.index].value}`,
+      text: `${bulletinMonthLabel(items[biggestRetro.index])} · ${items[biggestRetro.index].value}`,
     });
   }
   if (longestPause) {
@@ -459,7 +459,7 @@ function buildHistoryHighlights(items) {
   cards.push({
     icon: "🐱",
     title: "本月位置",
-    text: `${bulletinMonthLabel(latest)} · PD 到 ${latest.value}`,
+    text: `${bulletinMonthLabel(latest)} · ${latest.value}`,
   });
 
   return cards.slice(0, 4);
@@ -543,8 +543,8 @@ function renderHistoryChart(current) {
   const max = Math.max(...dates);
   const range = Math.max(1, max - min);
   const chartWidth = 640;
-  const chartHeight = 220;
-  const pad = 72;
+  const chartHeight = 260;
+  const pad = 86;
   const usableWidth = chartWidth - pad * 2;
   const usableHeight = chartHeight - pad * 2;
 
@@ -582,12 +582,12 @@ function renderHistoryChart(current) {
 
   const importantIndexes = importantHistoryIndexes(items);
   const important = new Set(importantIndexes);
-  const topLabelTracks = [22, 58];
-  const bottomLabelTracks = [chartHeight - 22, chartHeight - 58];
+  const topLabelTracks = [24, 62];
+  const bottomLabelTracks = [chartHeight - 24, chartHeight - 62];
   const placedLabels = [];
-  const labelWidth = 112;
-  const labelHeight = 34;
-  const labelGap = 118;
+  const labelWidth = 104;
+  const labelHeight = 30;
+  const labelGap = 112;
   points.forEach((point, index) => {
     const kind = classifyHistoryPoint(items, index);
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -638,7 +638,7 @@ function renderHistoryChart(current) {
       const pdText = document.createElementNS("http://www.w3.org/2000/svg", "text");
       pdText.setAttribute("class", "chart-label-pd");
       pdText.setAttribute("x", labelWidth / 2);
-      pdText.setAttribute("y", "27");
+      pdText.setAttribute("y", "25");
       pdText.setAttribute("text-anchor", "middle");
       pdText.textContent = labelText.pd;
       labelGroup.appendChild(pdText);

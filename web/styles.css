@@ -53,27 +53,9 @@ body[data-mood="retrogressed"] {
 }
 
 .bubble,
-.medical-cross,
-.flag-ribbon,
-.flag-star {
+.medical-cross {
   position: absolute;
   opacity: 0.65;
-}
-
-.flag-ribbon {
-  right: -24px;
-  top: 8px;
-  width: 238px;
-  height: auto;
-  opacity: 0.92;
-  transform: rotate(-7deg);
-  filter: drop-shadow(0 18px 18px rgba(25, 47, 111, 0.16));
-}
-
-.flag-star {
-  color: rgba(25, 47, 111, 0.32);
-  font-size: 34px;
-  line-height: 1;
 }
 
 .background-decor::before,
@@ -177,10 +159,7 @@ body[data-mood="retrogressed"] {
 }
 
 .topbar {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 20px;
+  display: block;
   padding: 8px 0 22px;
 }
 
@@ -342,6 +321,15 @@ h2 {
   padding: 18px 0 4px 120px;
 }
 
+.brand-bottom-row {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: min(860px, 100%);
+}
+
 .byline {
   position: relative;
   z-index: 2;
@@ -367,26 +355,26 @@ h2 {
 
 .top-actions {
   display: grid;
-  justify-items: end;
-  gap: 8px;
-  max-width: 360px;
+  justify-items: start;
+  gap: 6px;
+  max-width: 390px;
 }
 
 .top-action-buttons {
   display: flex;
   flex-wrap: wrap;
-  justify-content: end;
-  gap: 10px;
+  justify-content: start;
+  gap: 8px;
 }
 
 .ios-note {
   margin: 0;
   color: #53677e;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 850;
   line-height: 1.35;
-  text-align: right;
-  max-width: 300px;
+  text-align: left;
+  max-width: 340px;
 }
 
 .ios-note span {
@@ -1253,7 +1241,7 @@ input:focus {
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(240, 251, 255, 0.72)),
     repeating-linear-gradient(0deg, transparent 0 24px, rgba(47, 143, 167, 0.06) 24px 25px),
     repeating-linear-gradient(90deg, transparent 0 42px, rgba(47, 143, 167, 0.06) 42px 43px);
-  min-height: 270px;
+  min-height: 320px;
   margin-top: 16px;
   padding: 8px;
 }
@@ -1336,13 +1324,13 @@ input:focus {
 
 .chart-label-month {
   fill: #64748b;
-  font-size: 8px;
+  font-size: 7.5px;
   font-weight: 900;
 }
 
 .chart-label-pd {
   fill: #17364b;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 950;
 }
 
@@ -1708,7 +1696,6 @@ pre {
     padding-top: 20px;
   }
 
-  .topbar,
   .brand-lockup,
   .feed-head {
     align-items: stretch;
@@ -1745,6 +1732,13 @@ pre {
 
   .brand-title {
     width: min(440px, 100%);
+  }
+
+  .brand-bottom-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
   }
 
   .top-actions,
