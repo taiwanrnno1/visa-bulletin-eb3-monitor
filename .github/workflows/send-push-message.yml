@@ -29,7 +29,11 @@ jobs:
           import urllib.error
           import urllib.request
 
-          url = os.environ.get("WORKER_BROADCAST_URL") or "https://visa-bulletin-eb3-push.t6213982-32d.workers.dev/api/broadcast"
+          url = (os.environ.get("WORKER_BROADCAST_URL") or "https://visa-bulletin-eb3-push.t6213982-32d.workers.dev/api/broadcast").strip()
+          if url.endswith("/"):
+              url = url[:-1]
+          if not url.endswith("/api/broadcast"):
+              url = f"{url}/api/broadcast"
           secret = os.environ.get("WORKER_BROADCAST_SECRET", "")
           if not secret:
               raise SystemExit("Missing GitHub secret: WORKER_BROADCAST_SECRET")
@@ -47,12 +51,16 @@ jobs:
               headers={
                   "Authorization": f"Bearer {secret}",
                   "Content-Type": "application/json; charset=utf-8",
+                  "User-Agent": "VisaBulletinWatch/1.0 (+github-actions)",
               },
           )
           try:
               with urllib.request.urlopen(request, timeout=45) as response:
+                  print(f"Broadcast URL: {url}")
                   print(response.read().decode("utf-8"))
           except urllib.error.HTTPError as error:
+              print(f"Broadcast URL: {url}")
+              print(f"HTTP status: {error.code}")
               print(error.read().decode("utf-8", errors="replace"))
               raise
           PY
