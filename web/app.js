@@ -1,6 +1,8 @@
 const CHECK_INTERVAL_MS = 30 * 60 * 1000;
 const PD_STORAGE_KEY = "visaBulletinEb3PriorityDate";
 const DEVICE_ID_STORAGE_KEY = "visaBulletinEb3DeviceId";
+const NTFY_TOPIC = "visa-bulletin-eb3-t6213982";
+const NTFY_URL = `https://ntfy.sh/${NTFY_TOPIC}`;
 
 const state = {
   timer: null,
@@ -34,6 +36,7 @@ const els = {
   noticeText: document.querySelector("#noticeText"),
   checkNow: document.querySelector("#checkNow"),
   enableNotifications: document.querySelector("#enableNotifications"),
+  ntfyLink: document.querySelector("#ntfyLink"),
   sourceLink: document.querySelector("#sourceLink"),
   messagePanel: document.querySelector("#messagePanel"),
   messageKicker: document.querySelector("#messageKicker"),
@@ -272,7 +275,10 @@ async function loadStatus() {
     const response = await fetch("../visa_bulletin_state.json");
     const current = await response.json();
     renderState(current);
-    els.noticeText.textContent = "目前是免費網頁版：可查看最新資料與儲存自己的 PD。手機通知下一步會改成免費訂閱方案。";
+    els.enableNotifications.textContent = "查看手機通知設定";
+    els.ntfyLink.href = NTFY_URL;
+    els.ntfyLink.hidden = false;
+    els.noticeText.textContent = `目前是免費網頁版：可查看最新資料與儲存自己的 PD。\n手機通知使用 ntfy 免費頻道：${NTFY_TOPIC}`;
     setStatus("網頁版", "idle");
   }
 }
@@ -313,7 +319,8 @@ async function checkNow({ notifyBrowser = true } = {}) {
 
 async function enableNotifications() {
   if (!state.backendAvailable) {
-    els.noticeText.textContent = "GitHub Pages 免費版不能直接送瀏覽器推播；下一步我們用免費通知頻道，朋友也能一起訂閱。";
+    els.noticeText.textContent = `手機通知設定：\n1. 手機安裝 ntfy App。\n2. 新增訂閱 topic：${NTFY_TOPIC}\n3. 朋友也訂閱同一個 topic，就會一起收到每月公告通知。\n\n訂閱網址：${NTFY_URL}`;
+    window.open(NTFY_URL, "_blank", "noopener,noreferrer");
     return;
   }
   if (!("Notification" in window) || !("PushManager" in window)) {

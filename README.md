@@ -26,25 +26,48 @@ same bulletin's EB-3 value changes later.
 
 ## Phone notifications
 
-The easiest shared phone notification channel is ntfy.
+The easiest shared phone notification channel is ntfy. This project uses the
+free topic:
 
-1. Install the ntfy app on your phone.
-2. Subscribe to one private-looking topic name, for example
-   `visa-bulletin-eb3-louis-2026`.
-3. Put that same topic in a local `.env` file:
-
-```sh
-VISA_BULLETIN_NTFY_TOPIC=visa-bulletin-eb3-louis-2026
+```text
+visa-bulletin-eb3-t6213982
 ```
 
-Friends can install the same app and subscribe to the same topic to receive the
-same notices.
+1. Install the ntfy app on your phone.
+2. Subscribe to `visa-bulletin-eb3-t6213982`.
+3. Friends can subscribe to the same topic to receive the same monthly notices.
+
+For local testing, put that same topic in a local `.env` file:
+
+```sh
+VISA_BULLETIN_NTFY_TOPIC=visa-bulletin-eb3-t6213982
+```
 
 To send a sample notification:
 
 ```sh
 python3 visa_bulletin_watch.py --test-notification
 ```
+
+## Free GitHub Pages automation
+
+The free setup is:
+
+- GitHub Pages hosts the Chinese dashboard.
+- GitHub Actions checks the official Visa Bulletin every 30 minutes.
+- ntfy sends phone notifications when a new monthly bulletin is published, even
+  if the EB-3 date did not move.
+
+After pushing this repo to GitHub:
+
+1. Go to `Settings` -> `Pages`.
+2. Under `Build and deployment`, choose `Deploy from a branch`.
+3. Choose branch `main` and folder `/(root)`, then click `Save`.
+4. Go to `Settings` -> `Secrets and variables` -> `Actions`.
+5. Add a repository secret named `NTFY_TOPIC`.
+6. Set the value to `visa-bulletin-eb3-t6213982`.
+7. Go to the `Actions` tab, open `Check Visa Bulletin`, and run it once with
+   `Run workflow`.
 
 ## Web dashboard
 
