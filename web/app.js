@@ -1,4 +1,4 @@
-const CHECK_INTERVAL_MS = 30 * 60 * 1000;
+const CHECK_INTERVAL_MS = 60 * 60 * 1000;
 const PD_STORAGE_KEY = "visaBulletinEb3PriorityDate";
 const DEVICE_ID_STORAGE_KEY = "visaBulletinEb3DeviceId";
 const WORKER_BASE_STORAGE_KEY = "visaBulletinEb3WorkerBase";
@@ -60,7 +60,16 @@ function formatChecked(value) {
   if (!value) return "--";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("zh-TW");
+  const parts = new Intl.DateTimeFormat("zh-TW", {
+    timeZone: "Asia/Taipei",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const get = (type) => parts.find((part) => part.type === type)?.value || "";
+  return `${get("month")}月${get("day")}日 台灣時間 ${get("hour")}:${get("minute")}`;
 }
 
 function setStatus(text, kind = "idle") {
@@ -272,6 +281,10 @@ function renderState(current, { celebrate = false } = {}) {
   if (!current) return;
   state.current = current;
   els.dateValue.textContent = current.eb3_all_chargeability_final_action_date || "--";
+  if (current.source_url) {
+    els.dateValue.href = current.source_url;
+    els.sourceLink.href = current.source_url;
+  }
   els.movementValue.textContent = current.movement_from_previous_bulletin?.label || "--";
   if (current.previous_bulletin_source_url) {
     els.previousSourceLink.href = current.previous_bulletin_source_url;
@@ -285,10 +298,7 @@ function renderState(current, { celebrate = false } = {}) {
     els.previousSourceLink.hidden = true;
   }
   els.bulletinValue.textContent = current.bulletin || "--";
-  els.checkedValue.textContent = `上次檢查更新時間：${formatChecked(current.checked_at)}`;
-  if (current.source_url) {
-    els.sourceLink.href = current.source_url;
-  }
+  els.checkedValue.textContent = `最後更新時間 UTC/GMT +08:00：${formatChecked(current.checked_at)}`;
   renderMood(current.movement_from_previous_bulletin, celebrate);
   updatePdResult();
 }

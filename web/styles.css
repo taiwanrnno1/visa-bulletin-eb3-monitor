@@ -541,6 +541,35 @@ body[data-mood="retrogressed"] .brady-strip path {
   font-weight: 800;
 }
 
+.metric-label-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.metric-label-row .label {
+  position: static;
+}
+
+.metric-label-row a {
+  border: 1px solid rgba(47, 143, 167, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 900;
+  padding: 5px 10px;
+  text-decoration: none;
+}
+
+.metric-label-row a:hover {
+  background: white;
+  text-decoration: underline;
+}
+
 .metric strong {
   position: relative;
   z-index: 1;
@@ -565,6 +594,21 @@ body[data-mood="retrogressed"] .brady-strip path {
 .metric.primary strong {
   color: var(--accent-strong);
   font-size: 54px;
+}
+
+.date-link {
+  position: relative;
+  z-index: 1;
+  color: var(--accent-strong);
+  font-size: 54px;
+  font-weight: 900;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.date-link:hover {
+  text-decoration: underline;
 }
 
 .date-bulletin-row {
@@ -986,7 +1030,8 @@ pre {
     text-align: left;
   }
 
-  .metric.primary strong {
+  .metric.primary strong,
+  .date-link {
     font-size: 42px;
   }
 

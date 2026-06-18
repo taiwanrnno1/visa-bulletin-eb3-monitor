@@ -35,12 +35,12 @@ def main() -> int:
     previous, current = watcher.fetch_current_result(watcher.STATE_PATH)
     notice = watcher.build_notice(previous, current)
     print(str(notice["message"]))
+    watcher.save_state(watcher.STATE_PATH, current)
 
     if not notice["notify"]:
-        print("沒有新公告，這次不更新網站檔案。")
+        print("沒有新公告，這次只更新最後檢查時間。")
         return 0
 
-    watcher.save_state(watcher.STATE_PATH, current)
     if os.environ.get("VISA_BULLETIN_NTFY_TOPIC", "").strip():
         watcher.send_ntfy(str(notice["title"]), str(notice["message"]))
         print("ntfy 手機通知已送出。")

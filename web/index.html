@@ -73,12 +73,15 @@
 
       <section class="snapshot">
         <div class="metric primary">
-          <span class="label">本月公布日期</span>
+          <div class="metric-label-row">
+            <span class="label">本月公布日期</span>
+            <a id="sourceLink" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">官方來源</a>
+          </div>
           <div class="date-bulletin-row">
-            <strong id="dateValue">--</strong>
+            <a class="date-link" id="dateValue" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">--</a>
             <span class="bulletin-name" id="bulletinValue">--</span>
           </div>
-          <span class="subvalue muted" id="checkedValue">上次檢查更新時間：--</span>
+          <span class="subvalue muted" id="checkedValue">最後更新時間 UTC/GMT +08:00：--</span>
         </div>
         <div class="metric movement">
           <span class="label">相較上個月</span>
@@ -108,14 +111,10 @@
         </form>
       </section>
 
-      <section class="actions" aria-label="監控操作">
-        <a id="sourceLink" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">官方來源</a>
-      </section>
-
       <section class="feed" aria-label="最新訊息">
         <div class="feed-head">
           <h2>最新訊息</h2>
-          <span id="pollLabel">後台每 30 分鐘自動檢查</span>
+          <span id="pollLabel">後台每 1 小時自動檢查</span>
         </div>
         <pre id="noticeText">等待下一次檢查。</pre>
       </section>
