@@ -170,11 +170,11 @@ body[data-mood="retrogressed"] {
 
 .nurse-badge {
   flex: 0 0 auto;
-  width: 104px;
-  height: 104px;
+  width: 118px;
+  height: 148px;
   object-fit: contain;
   object-position: center;
-  filter: drop-shadow(0 12px 14px rgba(86, 66, 58, 0.12));
+  filter: drop-shadow(0 12px 14px rgba(24, 30, 35, 0.14));
 }
 
 .eyebrow,
