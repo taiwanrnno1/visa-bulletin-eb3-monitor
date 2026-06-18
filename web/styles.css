@@ -665,17 +665,22 @@ input:focus {
   transform: translateY(-50%);
 }
 
-.pd-inline-result {
+.pd-result-card {
   position: relative;
   z-index: 1;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 0;
+  border: 1px solid rgba(47, 143, 167, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  padding: 13px 14px;
   color: var(--ink);
   font-weight: 800;
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.55;
+}
+
+.pd-result-card[hidden] {
+  display: none;
 }
 
 .actions {
@@ -837,6 +842,22 @@ pre {
   color: var(--accent-strong);
   font-size: 14px;
   font-weight: 850;
+}
+
+.pd-dialog {
+  max-width: 560px;
+}
+
+.pd-modal-text {
+  margin-top: 14px;
+  border: 1px solid rgba(47, 143, 167, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 16px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 850;
+  line-height: 1.65;
 }
 
 .fireworks {

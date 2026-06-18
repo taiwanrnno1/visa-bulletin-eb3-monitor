@@ -74,7 +74,7 @@
           <span class="label">相較上個月</span>
           <strong id="movementValue">--</strong>
           <a class="mini-link" id="previousSourceLink" href="#" target="_blank" rel="noreferrer">比較基準：--</a>
-          <span class="pd-inline-result" id="pdResult">尚未輸入 PD。</span>
+          <div class="pd-result-card" id="pdResult" hidden></div>
         </div>
       </section>
 
@@ -142,6 +142,16 @@
             <p>如果沒有跳通知，請到 Chrome 網站設定確認通知權限是允許。</p>
           </article>
         </div>
+      </section>
+    </div>
+
+    <div class="guide-modal" id="pdModal" aria-hidden="true">
+      <div class="guide-backdrop" data-close-pd-modal></div>
+      <section class="guide-dialog pd-dialog" role="dialog" aria-modal="true" aria-labelledby="pdModalTitle">
+        <button class="guide-close" type="button" aria-label="關閉 PD 提醒" data-close-pd-modal>×</button>
+        <p class="section-chip">PD 小提醒</p>
+        <h2 id="pdModalTitle">我們幫你算好了</h2>
+        <p class="pd-modal-text" id="pdModalText"></p>
       </section>
     </div>
 

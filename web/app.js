@@ -40,6 +40,8 @@ const els = {
   enableNotifications: document.querySelector("#enableNotifications"),
   openGuide: document.querySelector("#openGuide"),
   guideModal: document.querySelector("#guideModal"),
+  pdModal: document.querySelector("#pdModal"),
+  pdModalText: document.querySelector("#pdModalText"),
   ntfyLink: document.querySelector("#ntfyLink"),
   sourceLink: document.querySelector("#sourceLink"),
   messagePanel: document.querySelector("#messagePanel"),
@@ -174,33 +176,37 @@ function formatDuration(days) {
   return `${absoluteDays} 天，約 ${months} 個月`;
 }
 
-function updatePdResult() {
+function buildPdMessage() {
   const pdText = els.pdInput.value.trim();
   const cutoffText = state.current?.eb3_all_chargeability_final_action_date;
   if (!pdText) {
-    els.pdResult.textContent = "尚未輸入 PD。";
-    return;
+    return "";
   }
 
   const pdDate = parseVisaDate(pdText);
   const cutoffDate = parseVisaDate(cutoffText);
   if (!pdDate) {
-    els.pdResult.textContent = "PD 格式看不懂，請用 01AUG24 或 2024-08-01。";
-    return;
+    return "PD 格式看不懂，請用 01AUG24 或 2024-08-01。";
   }
   if (!cutoffDate) {
-    els.pdResult.textContent = "目前公布值不是日期，暫時無法計算差距。";
-    return;
+    return "目前公布值不是日期，暫時無法計算差距。";
   }
 
   const diffDays = Math.round((cutoffDate - pdDate) / 86400000);
   if (diffDays > 0) {
-    els.pdResult.textContent = `你的 PD 已早於最新公布日期 ${cutoffText}，排期看起來已經到了。恭喜，這一步很不容易。`;
-  } else if (diffDays === 0) {
-    els.pdResult.textContent = `你的 PD 剛好等於最新公布日期 ${cutoffText}。官方文字通常要求早於公布日期，建議再確認當月指引。`;
-  } else {
-    els.pdResult.textContent = `你的 PD 距離最新公布日期 ${cutoffText} 還差 ${formatDuration(diffDays)}。我們繼續盯著。`;
+    return `你的 PD 已早於最新公布日期 ${cutoffText}，排期看起來已經到了。恭喜，這一步很不容易。`;
   }
+  if (diffDays === 0) {
+    return `你的 PD 剛好等於最新公布日期 ${cutoffText}。官方文字通常要求早於公布日期，建議再確認當月指引。`;
+  }
+  return `你的 PD 距離最新公布日期 ${cutoffText} 還差 ${formatDuration(diffDays)}。我們繼續盯著。`;
+}
+
+function updatePdResult() {
+  const message = buildPdMessage();
+  els.pdResult.textContent = message;
+  els.pdResult.hidden = !message;
+  return message;
 }
 
 function encouragementFor(movement) {
@@ -305,6 +311,18 @@ function openGuide() {
 function closeGuide() {
   els.guideModal?.classList.remove("open");
   els.guideModal?.setAttribute("aria-hidden", "true");
+}
+
+function openPdModal(message) {
+  if (!message) return;
+  els.pdModalText.textContent = message;
+  els.pdModal?.classList.add("open");
+  els.pdModal?.setAttribute("aria-hidden", "false");
+}
+
+function closePdModal() {
+  els.pdModal?.classList.remove("open");
+  els.pdModal?.setAttribute("aria-hidden", "true");
 }
 
 async function loadStatus() {
@@ -435,18 +453,32 @@ els.openGuide?.addEventListener("click", openGuide);
 document.querySelectorAll("[data-close-guide]").forEach((item) => {
   item.addEventListener("click", closeGuide);
 });
+document.querySelectorAll("[data-close-pd-modal]").forEach((item) => {
+  item.addEventListener("click", closePdModal);
+});
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") closeGuide();
+  if (event.key === "Escape") {
+    closeGuide();
+    closePdModal();
+  }
 });
 els.pdForm.addEventListener("submit", (event) => {
   event.preventDefault();
   localStorage.setItem(PD_STORAGE_KEY, els.pdInput.value.trim());
-  updatePdResult();
+  openPdModal(updatePdResult());
   saveDevice().catch(() => {
     els.noticeText.textContent = "PD 已存在本機，但同步到通知後台失敗。";
   });
 });
-els.pdInput.addEventListener("input", updatePdResult);
+els.pdInput.addEventListener("input", () => {
+  if (!els.pdInput.value.trim()) {
+    updatePdResult();
+    return;
+  }
+  if (parseVisaDate(els.pdInput.value)) {
+    updatePdResult();
+  }
+});
 els.pdInput.addEventListener("change", () => {
   const parsed = parseVisaDate(els.pdInput.value);
   if (parsed) {
@@ -464,7 +496,7 @@ els.openPdCalendar?.addEventListener("click", () => {
 els.pdDatePicker.addEventListener("change", () => {
   els.pdInput.value = els.pdDatePicker.value;
   localStorage.setItem(PD_STORAGE_KEY, els.pdInput.value.trim());
-  updatePdResult();
+  openPdModal(updatePdResult());
   saveDevice().catch(() => {
     els.noticeText.textContent = "PD 已存在本機，但同步到通知後台失敗。";
   });
