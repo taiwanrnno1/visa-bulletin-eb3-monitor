@@ -9,7 +9,7 @@
   "theme_color": "#2f8fa7",
   "icons": [
     {
-      "src": "assets/cute-medical-team-transparent.png",
+      "src": "assets/heimi-app-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"

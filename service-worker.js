@@ -24,8 +24,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,
-      icon: "assets/cute-medical-team-transparent.png",
-      badge: "assets/cute-medical-team-transparent.png",
+      icon: "assets/heimi-app-icon.png",
+      badge: "assets/heimi-app-icon.png",
       data: { url: payload.url || "./" },
     })
   );
