@@ -243,6 +243,29 @@ h1 {
   border-bottom-color: var(--accent-strong);
 }
 
+.top-actions {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+  max-width: 430px;
+}
+
+.top-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 10px;
+}
+
+.ios-note {
+  margin: 0;
+  color: #53677e;
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.45;
+  text-align: right;
+}
+
 h2 {
   font-size: 22px;
 }
@@ -930,6 +953,17 @@ pre {
 
   .brand-lockup {
     gap: 12px;
+  }
+
+  .top-actions,
+  .top-action-buttons {
+    justify-items: stretch;
+    justify-content: stretch;
+    max-width: none;
+  }
+
+  .ios-note {
+    text-align: left;
   }
 
   .metric.primary strong {
