@@ -305,12 +305,7 @@ async function loadStatus() {
     const response = await fetch("../visa_bulletin_state.json");
     const current = await response.json();
     renderState(current);
-    els.enableNotifications.textContent = pushWorkerBase() ? "開啟瀏覽器通知" : "查看手機通知設定";
-    els.ntfyLink.href = NTFY_URL;
-    els.ntfyLink.hidden = Boolean(pushWorkerBase());
-    els.noticeText.textContent = pushWorkerBase()
-      ? "目前是免費網頁版：可查看最新資料、儲存自己的 PD，也可以開啟瀏覽器通知。"
-      : `目前是免費網頁版：可查看最新資料與儲存自己的 PD。\n手機通知使用 ntfy 免費頻道：${NTFY_TOPIC}`;
+    els.noticeText.textContent = "目前是免費網頁版：可查看最新資料與儲存自己的 PD。";
     setStatus("網頁版", "idle");
   }
 }
@@ -323,7 +318,7 @@ async function checkNow({ notifyBrowser = true } = {}) {
     return;
   }
   state.checking = true;
-  els.checkNow.disabled = true;
+  if (els.checkNow) els.checkNow.disabled = true;
   setStatus("檢查中", "busy");
 
   try {
@@ -345,7 +340,7 @@ async function checkNow({ notifyBrowser = true } = {}) {
     setStatus("錯誤", "error");
   } finally {
     state.checking = false;
-    els.checkNow.disabled = false;
+    if (els.checkNow) els.checkNow.disabled = false;
   }
 }
 
@@ -385,8 +380,8 @@ async function enableNotifications() {
   }
 }
 
-els.checkNow.addEventListener("click", () => checkNow());
-els.enableNotifications.addEventListener("click", enableNotifications);
+els.checkNow?.addEventListener("click", () => checkNow());
+els.enableNotifications?.addEventListener("click", enableNotifications);
 els.pdForm.addEventListener("submit", (event) => {
   event.preventDefault();
   localStorage.setItem(PD_STORAGE_KEY, els.pdInput.value.trim());
