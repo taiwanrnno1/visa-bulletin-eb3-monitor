@@ -568,6 +568,9 @@ function renderHistoryChart(current) {
 
   const importantIndexes = importantHistoryIndexes(items);
   const important = new Set(importantIndexes);
+  const labelTracks = [22, 44, chartHeight - 34, chartHeight - 12];
+  const placedLabels = [];
+  const labelGap = 96;
   points.forEach((point, index) => {
     const kind = classifyHistoryPoint(items, index);
     const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -579,9 +582,13 @@ function renderHistoryChart(current) {
 
     if (important.has(index)) {
       const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      const trackY = labelTracks.find((track) => (
+        placedLabels.every((placed) => placed.y !== track || Math.abs(placed.x - point.x) > labelGap)
+      )) || labelTracks[index % labelTracks.length];
+      placedLabels.push({ x: point.x, y: trackY });
       label.setAttribute("class", `chart-label ${kind}`);
       label.setAttribute("x", point.x);
-      label.setAttribute("y", index % 2 === 0 ? 22 : chartHeight - 14);
+      label.setAttribute("y", trackY);
       label.setAttribute("text-anchor", "middle");
       label.textContent = point.value;
       els.historyChart.appendChild(label);
