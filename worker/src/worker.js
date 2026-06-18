@@ -133,12 +133,21 @@ async function caseStatus(request, env) {
   }
 
   const officialUrl = `https://egov.uscis.gov/casestatus/mycasestatus.do?appReceiptNum=${encodeURIComponent(receiptNumber)}`;
-  const response = await fetch(officialUrl, {
+  const form = new URLSearchParams();
+  form.set("appReceiptNum", receiptNumber);
+  form.set("initCaseSearch", "CHECK STATUS");
+
+  const response = await fetch("https://egov.uscis.gov/casestatus/mycasestatus.do", {
+    method: "POST",
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; HeimiBulletin/1.0; +https://taiwanrnno1.github.io/visa-bulletin-eb3-monitor/)",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
       "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "Accept-Language": "en-US,en;q=0.9",
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Origin": "https://egov.uscis.gov",
+      "Referer": "https://egov.uscis.gov/casestatus/landing.do",
     },
+    body: form.toString(),
   });
 
   const html = await response.text();
@@ -161,7 +170,6 @@ async function caseStatus(request, env) {
 
   return json({
     ok: true,
-    receiptNumber,
     officialUrl,
     title: parsed.title,
     body: parsed.body,

@@ -609,7 +609,7 @@ els.checkCaseStatus?.addEventListener("click", async () => {
   renderCaseModal({
     title: "黑咪查詢中...",
     text: "正在讀取 USCIS 官方 Case Status，請稍等喵～",
-    meta: `Receipt Number：${maskReceiptNumber(receiptNumber)}`,
+    meta: "Receipt Number 已保護，不會顯示在查詢結果裡。",
     officialUrl: caseStatusUrl(receiptNumber),
   });
 
@@ -626,7 +626,7 @@ els.checkCaseStatus?.addEventListener("click", async () => {
     renderCaseModal({
       title: payload.titleZh || "USCIS 案件狀態",
       text: payload.bodyZh || "黑咪讀到結果，但暫時無法整理完整內容，請搭配官方頁面確認喵～",
-      meta: `Receipt Number：${maskReceiptNumber(payload.receiptNumber)}｜官方原文：${payload.title || "無標題"}`,
+      meta: `官方原文：${payload.title || "無標題"}｜Receipt Number 已保護`,
       officialUrl: payload.officialUrl,
     });
     els.caseNote.textContent = "查詢完成。黑咪沒有儲存官方結果，只保留你本機的 Receipt Number。";
@@ -637,7 +637,7 @@ els.checkCaseStatus?.addEventListener("click", async () => {
     renderCaseModal({
       title: "黑咪暫時查不到喵",
       text: `${errorText} 你可以先按官方頁面確認，或稍後再試。`,
-      meta: `Receipt Number：${maskReceiptNumber(receiptNumber)}`,
+      meta: "Receipt Number 已保護，不會顯示在查詢結果裡。",
       officialUrl: caseStatusUrl(receiptNumber),
     });
     els.caseNote.textContent = "USCIS 官方查詢暫時失敗，請用官方頁面按鈕確認或稍後再試。";
