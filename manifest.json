@@ -1,6 +1,6 @@
 {
-  "name": "Visa Bulletin EB-3 監控",
-  "short_name": "EB-3 排期",
+  "name": "黑咪即時通",
+  "short_name": "黑咪即時通",
   "id": "./web/",
   "start_url": "web/",
   "scope": "./",
