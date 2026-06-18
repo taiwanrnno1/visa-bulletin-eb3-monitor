@@ -215,6 +215,32 @@ h1 {
   text-shadow: 0 2px 0 rgba(255, 255, 255, 0.85);
 }
 
+.title-row {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.byline {
+  max-width: 520px;
+  margin: 0 0 6px;
+  color: #53677e;
+  font-size: clamp(12px, 1.8vw, 15px);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.byline a {
+  color: var(--accent-strong);
+  text-decoration: none;
+  border-bottom: 2px solid rgba(47, 143, 167, 0.28);
+}
+
+.byline a:hover {
+  border-bottom-color: var(--accent-strong);
+}
+
 h2 {
   font-size: 22px;
 }
