@@ -152,6 +152,14 @@ def send_ntfy(title: str, message: str) -> None:
         response.read()
 
 
+def format_notice_date(value: object) -> str:
+    text = str(value or "").strip().upper()
+    match = re.fullmatch(r"(\d{2})([A-Z]{3})(\d{2})", text)
+    if not match:
+        return text
+    return f"{match.group(1)} {match.group(2)} {match.group(3)}"
+
+
 def parse_bulletin_links(html: str) -> list[BulletinLink]:
     parser = LinkParser()
     parser.feed(html)
@@ -316,10 +324,8 @@ def build_notice(
     value_changed = previous_value != value
 
     if new_bulletin:
-        old_bulletin = previous_bulletin if previous_bulletin is not None else "沒有上次公告"
         lines = [
-            f"新的 Visa Bulletin 已公布：{old_bulletin} -> {latest_label}",
-            f"EB-3 All Chargeability 本月公布日期：{value}",
+            f"EB-3 表Ａ 其餘國家 本月公布日期：{format_notice_date(value)}",
             f"相較上個月：{movement['label']}",
         ]
         if previous_month_value is not None and previous_month_value != value:
@@ -327,7 +333,7 @@ def build_notice(
         return {
             "status": "new_bulletin",
             "notify": True,
-            "title": "新的 Visa Bulletin 已公布",
+            "title": "號外 號外！本月EB-3排程出來了！喵～",
             "message": "\n".join(lines),
             "previous_value": previous_month_value,
             "movement": movement,
@@ -337,14 +343,14 @@ def build_notice(
     if value_changed:
         old_display = previous_month_value if previous_month_value is not None else "沒有上個月數值"
         lines = [
-            f"EB-3 All Chargeability 數值更新：{old_display} -> {value}",
+            f"EB-3 表Ａ 其餘國家 本月公布日期：{format_notice_date(value)}",
             f"相較上個月：{movement['label']}",
-            f"公告月份：{latest_label}",
+            f"上個月數值：{old_display}",
         ]
         return {
             "status": "value_changed",
             "notify": True,
-            "title": "Visa Bulletin EB-3 數值更新",
+            "title": "號外 號外！本月EB-3排程出來了！喵～",
             "message": "\n".join(lines),
             "previous_value": previous_month_value,
             "movement": movement,

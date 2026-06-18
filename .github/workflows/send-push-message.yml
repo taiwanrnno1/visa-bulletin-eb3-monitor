@@ -6,11 +6,11 @@ on:
       title:
         description: "通知標題"
         required: true
-        default: "Visa Bulletin EB-3 監控"
+        default: "號外 號外！本月EB-3排程出來了！喵～"
       body:
         description: "通知內容"
         required: true
-        default: "這是一則手動群發通知。"
+        default: "EB-3 表Ａ 其餘國家 本月公布日期：01 AUG 24\n相較上個月：前進 61 天，約 2.0 個月\n上個月數值：01JUN24"
 
 jobs:
   send:
