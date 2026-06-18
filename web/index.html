@@ -103,6 +103,48 @@
 
       <section class="pd-result-card" id="pdResult" hidden></section>
 
+      <section class="tool-grid" aria-label="黑咪實用小工具">
+        <article class="progress-card">
+          <div class="tool-head">
+            <p class="section-chip">🐾 我的等待進度條</p>
+            <span id="progressBadge">尚未輸入 PD</span>
+          </div>
+          <h2>黑咪陪你量距離</h2>
+          <div class="progress-track" aria-hidden="true">
+            <span id="waitProgressFill"></span>
+          </div>
+          <div class="progress-stats">
+            <span id="waitedDays">已等待：--</span>
+            <span id="gapDays">距離本月：--</span>
+          </div>
+          <p id="progressText">輸入 Priority Date 後，黑咪會幫你估算等待時間與離本月公布日期還差多久喵～</p>
+        </article>
+
+        <article class="share-card" id="shareCard">
+          <div class="tool-head">
+            <p class="section-chip">📣 本月懶人包</p>
+            <button id="copyShareCard" class="secondary-action compact-button" type="button">🐱 複製分享文</button>
+          </div>
+          <h2>黑咪快報分享卡</h2>
+          <div class="share-preview" id="sharePreview"></div>
+          <p id="shareStatus">可直接複製到 LINE、IG 或社群喵～</p>
+        </article>
+      </section>
+
+      <section class="history-panel" aria-label="排期歷史圖表">
+        <div class="tool-head">
+          <div>
+            <p class="section-chip">📈 排期歷史圖表</p>
+            <h2>EB-3 表 A 其餘國家走勢</h2>
+          </div>
+          <span id="historySummary">黑咪正在整理線圖喵～</span>
+        </div>
+        <div class="chart-wrap">
+          <svg id="historyChart" viewBox="0 0 640 220" role="img" aria-label="EB-3 排期歷史走勢圖"></svg>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </section>
+
       <section class="pd-panel" aria-label="Priority Date 計算">
         <div>
           <p class="section-chip">🐾 Priority Date 小筆記</p>
@@ -126,17 +168,16 @@
         <div>
           <p class="section-chip">🐾 I-140 Case 小筆記</p>
           <h2>I-140 進度查詢</h2>
-          <p>輸入 Receipt Number，黑咪會幫你讀取 USCIS 官方結果 喵～</p>
+          <p>Receipt Number 只存在你的裝置。黑咪幫你開啟 USCIS 官方查詢頁，結果請以官方頁面為準喵～</p>
         </div>
         <form class="case-form" id="caseForm">
           <label for="receiptInput">Receipt Number</label>
           <div class="case-row">
             <input id="receiptInput" name="receiptInput" placeholder="例如 EAC1234567890" autocomplete="off" />
             <button id="saveReceipt" type="submit">🐾 儲存</button>
-            <button id="checkCaseStatus" type="button">🐱 直接查詢</button>
-            <button id="openCaseStatus" class="secondary-action" type="button">📋 官方頁面</button>
+            <button id="openCaseStatus" class="secondary-action" type="button">🐱 開啟 USCIS 官方查詢</button>
           </div>
-          <p class="privacy-note" id="caseNote">Receipt Number 平常只儲存在本機；按查詢時會送到 USCIS 官方，並由 Cloudflare Worker 轉送但不儲存。</p>
+          <p class="privacy-note" id="caseNote">Receipt Number 只儲存在你的瀏覽器本機；黑咪快報不會上傳或保存。</p>
         </form>
       </section>
 
@@ -192,26 +233,6 @@
           <img src="../assets/heimi-face-modal.png" alt="" />
         </div>
         <p class="pd-modal-text" id="pdModalText"></p>
-      </section>
-    </div>
-
-    <div class="guide-modal" id="caseModal" aria-hidden="true">
-      <div class="guide-backdrop" data-close-case-modal></div>
-      <section class="guide-dialog case-dialog" role="dialog" aria-modal="true" aria-labelledby="caseModalTitle">
-        <button class="guide-close" type="button" aria-label="關閉 I-140 查詢結果" data-close-case-modal>×</button>
-        <p class="section-chip">🐾 I-140 查詢結果</p>
-        <div class="pd-modal-heading">
-          <h2 id="caseModalTitle">黑咪幫你看好了喵～</h2>
-          <img src="../assets/heimi-face-modal.png" alt="" />
-        </div>
-        <div class="case-result-box">
-          <p class="case-result-status" id="caseStatusTitle">查詢中...</p>
-          <p class="case-result-text" id="caseStatusText"></p>
-          <p class="case-result-meta" id="caseStatusMeta"></p>
-        </div>
-        <div class="case-modal-actions">
-          <a id="caseOfficialLink" class="secondary-action official-case-link" href="https://egov.uscis.gov/" target="_blank" rel="noreferrer">📋 打開 USCIS 官方頁</a>
-        </div>
       </section>
     </div>
 

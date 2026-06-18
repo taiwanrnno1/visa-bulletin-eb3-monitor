@@ -44,11 +44,6 @@ const els = {
   guideModal: document.querySelector("#guideModal"),
   pdModal: document.querySelector("#pdModal"),
   pdModalText: document.querySelector("#pdModalText"),
-  caseModal: document.querySelector("#caseModal"),
-  caseStatusTitle: document.querySelector("#caseStatusTitle"),
-  caseStatusText: document.querySelector("#caseStatusText"),
-  caseStatusMeta: document.querySelector("#caseStatusMeta"),
-  caseOfficialLink: document.querySelector("#caseOfficialLink"),
   ntfyLink: document.querySelector("#ntfyLink"),
   sourceLink: document.querySelector("#sourceLink"),
   messagePanel: document.querySelector("#messagePanel"),
@@ -63,9 +58,19 @@ const els = {
   pdResult: document.querySelector("#pdResult"),
   caseForm: document.querySelector("#caseForm"),
   receiptInput: document.querySelector("#receiptInput"),
-  checkCaseStatus: document.querySelector("#checkCaseStatus"),
   openCaseStatus: document.querySelector("#openCaseStatus"),
   caseNote: document.querySelector("#caseNote"),
+  progressBadge: document.querySelector("#progressBadge"),
+  waitProgressFill: document.querySelector("#waitProgressFill"),
+  waitedDays: document.querySelector("#waitedDays"),
+  gapDays: document.querySelector("#gapDays"),
+  progressText: document.querySelector("#progressText"),
+  sharePreview: document.querySelector("#sharePreview"),
+  copyShareCard: document.querySelector("#copyShareCard"),
+  shareStatus: document.querySelector("#shareStatus"),
+  historyChart: document.querySelector("#historyChart"),
+  historyList: document.querySelector("#historyList"),
+  historySummary: document.querySelector("#historySummary"),
 };
 
 function formatChecked(value) {
@@ -195,13 +200,6 @@ function normalizeReceiptNumber(value) {
   return String(value || "").replace(/[\s-]/g, "").toUpperCase();
 }
 
-function maskReceiptNumber(value) {
-  const text = normalizeReceiptNumber(value);
-  if (!text) return "";
-  if (text.length <= 7) return text;
-  return `${text.slice(0, 3)}••••••${text.slice(-4)}`;
-}
-
 function isValidReceiptNumber(value) {
   return /^[A-Z]{3}\d{10}$/.test(normalizeReceiptNumber(value));
 }
@@ -215,7 +213,201 @@ function caseStatusUrl(receiptNumber) {
 function formatDuration(days) {
   const absoluteDays = Math.abs(days);
   const months = Math.round((absoluteDays / 30.4375) * 10) / 10;
-  return `${absoluteDays} 天，約 ${months} 個月`;
+  return `${absoluteDays} 天，約 ${months.toFixed(1)} 個月`;
+}
+
+function formatBulletinDateReadable(value) {
+  const text = String(value || "").trim().toUpperCase();
+  const match = text.match(/^(\d{2})([A-Z]{3})(\d{2})$/);
+  if (!match) return text || "--";
+  return `${match[1]} ${match[2]} ${match[3]}`;
+}
+
+function daysBetween(firstDate, secondDate) {
+  return Math.round((secondDate - firstDate) / 86400000);
+}
+
+function getTodayUtc() {
+  const today = new Date();
+  return new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+}
+
+function buildHistoryItems(current) {
+  const items = [];
+  if (Array.isArray(current?.history)) {
+    current.history.forEach((item) => {
+      const dateText = item.eb3_all_chargeability_final_action_date || item.value;
+      if (parseVisaDate(dateText)) {
+        items.push({
+          bulletin: item.bulletin || item.label || "Visa Bulletin",
+          value: dateText,
+          url: item.source_url || item.url || "",
+        });
+      }
+    });
+  }
+
+  if (items.length === 0 && current?.previous_bulletin_eb3_all_chargeability_final_action_date) {
+    items.push({
+      bulletin: current.previous_bulletin || "上個月",
+      value: current.previous_bulletin_eb3_all_chargeability_final_action_date,
+      url: current.previous_bulletin_source_url || "",
+    });
+  }
+
+  if (current?.eb3_all_chargeability_final_action_date) {
+    const alreadyIncluded = items.some((item) => item.bulletin === current.bulletin && item.value === current.eb3_all_chargeability_final_action_date);
+    if (!alreadyIncluded) {
+      items.push({
+        bulletin: current.bulletin || "本月",
+        value: current.eb3_all_chargeability_final_action_date,
+        url: current.source_url || "",
+      });
+    }
+  }
+
+  return items
+    .filter((item) => parseVisaDate(item.value))
+    .sort((a, b) => parseVisaDate(a.value) - parseVisaDate(b.value));
+}
+
+function buildShareText(current) {
+  if (!current) return "黑咪快報正在整理本月資料喵～";
+  const movement = current.movement_from_previous_bulletin || {};
+  const kind = movement.kind || "same";
+  const currentDate = formatBulletinDateReadable(current.eb3_all_chargeability_final_action_date);
+  const previousDate = formatBulletinDateReadable(current.previous_bulletin_eb3_all_chargeability_final_action_date);
+
+  if (kind === "advanced") {
+    return `🐱 好消息！EB-3 排期前進啦！喵～\n\n📅 表 A 本月最新日期：${currentDate}\n🚀 較上個月推進 ${formatDuration(movement.days || 0)}\n📍 上個月數值：${previousDate}\n🐾 快來看看你的 Priority Date 是不是更接近了！`;
+  }
+
+  if (kind === "retrogressed") {
+    return `🐱 EB-3 排期更新！本月出現倒退喵～\n\n📅 表 A 最新日期：${currentDate}\n⬅️ 較上個月倒退 ${formatDuration(movement.days || 0)}\n📍 上個月日期：${previousDate}\n🐾 別灰心，下個月再持續關注最新動態！`;
+  }
+
+  return `🐱 EB-3 排期更新！本月維持不變喵～\n\n📅 表 A 最新日期仍為 ${currentDate}\n⏸️ 與上個月相比沒有前進也沒有倒退\n📍 上個月日期：${previousDate}\n耐心等待，下個月再一起關注喵～ 🐾`;
+}
+
+function renderShareCard(current) {
+  if (!els.sharePreview) return;
+  els.sharePreview.textContent = buildShareText(current);
+}
+
+function renderProgressCard() {
+  if (!els.waitProgressFill) return;
+  const pdDate = parseVisaDate(els.pdInput.value);
+  const cutoffDate = parseVisaDate(state.current?.eb3_all_chargeability_final_action_date);
+  const today = getTodayUtc();
+
+  if (!pdDate || !cutoffDate) {
+    els.progressBadge.textContent = "尚未輸入 PD";
+    els.waitProgressFill.style.width = "8%";
+    els.waitedDays.textContent = "已等待：--";
+    els.gapDays.textContent = "距離本月：--";
+    els.progressText.textContent = "輸入 Priority Date 後，黑咪會幫你估算等待時間與離本月公布日期還差多久喵～";
+    return;
+  }
+
+  const waited = Math.max(0, daysBetween(pdDate, today));
+  const diffToCutoff = daysBetween(cutoffDate, pdDate);
+  if (diffToCutoff <= 0) {
+    els.progressBadge.textContent = "本月已到或已超過";
+    els.waitProgressFill.style.width = "100%";
+    els.waitedDays.textContent = `已等待：${formatDuration(waited)}`;
+    els.gapDays.textContent = "距離本月：已到達";
+    els.progressText.textContent = "黑咪敲碗！你的 Priority Date 已經早於或等於本月公布日期，請搭配官方指引與律師確認下一步喵～";
+    return;
+  }
+
+  const roughTotal = Math.max(1, waited + diffToCutoff);
+  const percent = Math.max(6, Math.min(96, Math.round((waited / roughTotal) * 100)));
+  els.progressBadge.textContent = `${percent}% 旅程感`;
+  els.waitProgressFill.style.width = `${percent}%`;
+  els.waitedDays.textContent = `已等待：約 ${formatDuration(waited)}`;
+  els.gapDays.textContent = `距離本月：${formatDuration(diffToCutoff)}`;
+  els.progressText.textContent = "這是黑咪用目前公布日期估算的等待旅程感，不是官方預測；但很適合每月追蹤自己的距離喵～";
+}
+
+function renderHistoryChart(current) {
+  if (!els.historyChart || !els.historyList) return;
+  const items = buildHistoryItems(current);
+  els.historyChart.innerHTML = "";
+  els.historyList.innerHTML = "";
+
+  if (items.length === 0) {
+    els.historySummary.textContent = "目前還沒有可畫圖的資料";
+    return;
+  }
+
+  const dates = items.map((item) => parseVisaDate(item.value).getTime());
+  const min = Math.min(...dates);
+  const max = Math.max(...dates);
+  const range = Math.max(1, max - min);
+  const chartWidth = 640;
+  const chartHeight = 220;
+  const pad = 34;
+  const usableWidth = chartWidth - pad * 2;
+  const usableHeight = chartHeight - pad * 2;
+
+  const points = items.map((item, index) => {
+    const x = items.length === 1 ? chartWidth / 2 : pad + (index / (items.length - 1)) * usableWidth;
+    const y = pad + (1 - ((parseVisaDate(item.value).getTime() - min) / range)) * usableHeight;
+    return { ...item, x, y };
+  });
+
+  const grid = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  grid.setAttribute("class", "chart-grid");
+  for (let i = 0; i < 5; i += 1) {
+    const y = pad + (i / 4) * usableHeight;
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", pad);
+    line.setAttribute("x2", chartWidth - pad);
+    line.setAttribute("y1", y);
+    line.setAttribute("y2", y);
+    grid.appendChild(line);
+  }
+  els.historyChart.appendChild(grid);
+
+  if (points.length > 1) {
+    const polyline = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    polyline.setAttribute("class", "chart-line");
+    polyline.setAttribute("points", points.map((point) => `${point.x},${point.y}`).join(" "));
+    els.historyChart.appendChild(polyline);
+  }
+
+  points.forEach((point) => {
+    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    dot.setAttribute("class", "chart-dot");
+    dot.setAttribute("cx", point.x);
+    dot.setAttribute("cy", point.y);
+    dot.setAttribute("r", "7");
+    els.historyChart.appendChild(dot);
+
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("class", "chart-label");
+    label.setAttribute("x", point.x);
+    label.setAttribute("y", Math.max(18, point.y - 14));
+    label.setAttribute("text-anchor", "middle");
+    label.textContent = point.value;
+    els.historyChart.appendChild(label);
+  });
+
+  els.historySummary.textContent = items.length > 1
+    ? `目前整理 ${items.length} 個月份`
+    : "目前先顯示本月資料";
+
+  items.forEach((item) => {
+    const row = document.createElement(item.url ? "a" : "span");
+    row.className = "history-item";
+    if (item.url) {
+      row.href = item.url;
+      row.target = "_blank";
+      row.rel = "noreferrer";
+    }
+    row.textContent = `🐾 ${item.bulletin}：${item.value}`;
+    els.historyList.appendChild(row);
+  });
 }
 
 function buildPdMessage() {
@@ -334,6 +526,9 @@ function renderState(current, { celebrate = false } = {}) {
   els.checkedValue.textContent = `🕒 最後更新時間 UTC/GMT +08:00：${formatChecked(current.checked_at)}`;
   renderMood(current.movement_from_previous_bulletin, celebrate);
   updatePdResult();
+  renderProgressCard();
+  renderShareCard(current);
+  renderHistoryChart(current);
 }
 
 function notify(title, body) {
@@ -366,26 +561,6 @@ function openPdModal(message) {
 function closePdModal() {
   els.pdModal?.classList.remove("open");
   els.pdModal?.setAttribute("aria-hidden", "true");
-}
-
-function openCaseModal() {
-  els.caseModal?.classList.add("open");
-  els.caseModal?.setAttribute("aria-hidden", "false");
-}
-
-function closeCaseModal() {
-  els.caseModal?.classList.remove("open");
-  els.caseModal?.setAttribute("aria-hidden", "true");
-}
-
-function renderCaseModal({ title, text, meta, officialUrl }) {
-  els.caseStatusTitle.textContent = title;
-  els.caseStatusText.textContent = text;
-  els.caseStatusMeta.textContent = meta || "";
-  if (officialUrl) {
-    els.caseOfficialLink.href = officialUrl;
-  }
-  openCaseModal();
 }
 
 async function loadStatus() {
@@ -519,20 +694,17 @@ document.querySelectorAll("[data-close-guide]").forEach((item) => {
 document.querySelectorAll("[data-close-pd-modal]").forEach((item) => {
   item.addEventListener("click", closePdModal);
 });
-document.querySelectorAll("[data-close-case-modal]").forEach((item) => {
-  item.addEventListener("click", closeCaseModal);
-});
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeGuide();
     closePdModal();
-    closeCaseModal();
   }
 });
 els.pdForm.addEventListener("submit", (event) => {
   event.preventDefault();
   localStorage.setItem(PD_STORAGE_KEY, els.pdInput.value.trim());
   openPdModal(updatePdResult());
+  renderProgressCard();
   saveDevice().catch(() => {
     els.noticeText.textContent = "PD 已存在本機，但同步到通知後台失敗。";
   });
@@ -544,6 +716,7 @@ els.pdInput.addEventListener("input", () => {
   }
   if (parseVisaDate(els.pdInput.value)) {
     updatePdResult();
+    renderProgressCard();
   }
 });
 els.pdInput.addEventListener("change", () => {
@@ -551,6 +724,7 @@ els.pdInput.addEventListener("change", () => {
   if (parsed) {
     els.pdDatePicker.value = toIsoDate(parsed);
   }
+  renderProgressCard();
 });
 els.openPdCalendar?.addEventListener("click", () => {
   if (typeof els.pdDatePicker.showPicker === "function") {
@@ -564,6 +738,7 @@ els.pdDatePicker.addEventListener("change", () => {
   els.pdInput.value = els.pdDatePicker.value;
   localStorage.setItem(PD_STORAGE_KEY, els.pdInput.value.trim());
   openPdModal(updatePdResult());
+  renderProgressCard();
   saveDevice().catch(() => {
     els.noticeText.textContent = "PD 已存在本機，但同步到通知後台失敗。";
   });
@@ -578,7 +753,7 @@ els.caseForm?.addEventListener("submit", (event) => {
   }
   els.receiptInput.value = receiptNumber;
   localStorage.setItem(RECEIPT_STORAGE_KEY, receiptNumber);
-  els.caseNote.textContent = "已儲存在這台裝置。Receipt Number 不會送到黑咪快報後台喵～";
+  els.caseNote.textContent = "已儲存在這台裝置。Receipt Number 不會送到黑咪快報後台喵～需要查詢時請按官方查詢。";
 });
 
 els.openCaseStatus?.addEventListener("click", () => {
@@ -591,58 +766,16 @@ els.openCaseStatus?.addEventListener("click", () => {
   els.receiptInput.value = receiptNumber;
   localStorage.setItem(RECEIPT_STORAGE_KEY, receiptNumber);
   window.open(caseStatusUrl(receiptNumber), "_blank", "noopener,noreferrer");
-  els.caseNote.textContent = "已開啟 USCIS 官方 Case Status。黑咪快報只在本機保存這組號碼。";
+  els.caseNote.textContent = "已開啟 USCIS 官方 Case Status。若沒有自動帶入，請在官方頁貼上你本機儲存的 Receipt Number。";
 });
 
-els.checkCaseStatus?.addEventListener("click", async () => {
-  const receiptNumber = normalizeReceiptNumber(els.receiptInput.value || localStorage.getItem(RECEIPT_STORAGE_KEY));
-  if (!isValidReceiptNumber(receiptNumber)) {
-    els.caseNote.textContent = "請先輸入正確的 Receipt Number，再讓黑咪幫你查詢喵～";
-    els.receiptInput.focus();
-    return;
-  }
-
-  els.receiptInput.value = receiptNumber;
-  localStorage.setItem(RECEIPT_STORAGE_KEY, receiptNumber);
-  els.checkCaseStatus.disabled = true;
-  els.caseNote.textContent = "黑咪正在連到 USCIS 官方查詢中，請等一下喵～";
-  renderCaseModal({
-    title: "黑咪查詢中...",
-    text: "正在讀取 USCIS 官方 Case Status，請稍等喵～",
-    meta: "Receipt Number 已保護，不會顯示在查詢結果裡。",
-    officialUrl: caseStatusUrl(receiptNumber),
-  });
-
+els.copyShareCard?.addEventListener("click", async () => {
+  const text = buildShareText(state.current);
   try {
-    const response = await fetch(`${pushWorkerBase()}/api/case-status`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ receiptNumber }),
-    });
-    const payload = await response.json();
-    if (!payload.ok) {
-      throw new Error(payload.error || "USCIS 查詢暫時失敗。");
-    }
-    renderCaseModal({
-      title: payload.titleZh || "USCIS 案件狀態",
-      text: payload.bodyZh || "黑咪讀到結果，但暫時無法整理完整內容，請搭配官方頁面確認喵～",
-      meta: `官方原文：${payload.title || "無標題"}｜Receipt Number 已保護`,
-      officialUrl: payload.officialUrl,
-    });
-    els.caseNote.textContent = "查詢完成。黑咪沒有儲存官方結果，只保留你本機的 Receipt Number。";
-  } catch (error) {
-    const errorText = error instanceof TypeError && /fetch/i.test(error.message)
-      ? "連線被瀏覽器或查詢服務擋住了。請使用正式網址，並確認 Cloudflare Worker 已重新部署。"
-      : error.message;
-    renderCaseModal({
-      title: "黑咪暫時查不到喵",
-      text: `${errorText} 你可以先按官方頁面確認，或稍後再試。`,
-      meta: "Receipt Number 已保護，不會顯示在查詢結果裡。",
-      officialUrl: caseStatusUrl(receiptNumber),
-    });
-    els.caseNote.textContent = "USCIS 官方查詢暫時失敗，請用官方頁面按鈕確認或稍後再試。";
-  } finally {
-    els.checkCaseStatus.disabled = false;
+    await navigator.clipboard.writeText(text);
+    els.shareStatus.textContent = "已複製分享文，黑咪幫你準備好了喵～";
+  } catch {
+    els.shareStatus.textContent = "瀏覽器暫時不給複製，請手動選取懶人包文字喵～";
   }
 });
 
