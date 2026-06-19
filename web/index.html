@@ -43,6 +43,7 @@
                 <div class="top-action-buttons">
                   <button id="enableNotifications" type="button">📣 開啟瀏覽器通知</button>
                   <button id="openGuide" class="secondary-action" type="button">🐾 詳細使用說明</button>
+                  <button id="shareSite" class="secondary-action" type="button">🔗 分享 / 複製網址</button>
                 </div>
                 <p class="ios-note">
                   <span>🐾 iPhone 用戶請先詳閱說明</span>
@@ -62,6 +63,25 @@
           <span>🔒 Receipt Number 只儲存在你的瀏覽器本機，不會送到黑咪快報後台。</span>
           <span>🐱 重要移民決定請諮詢合格移民律師或官方單位。</span>
         </div>
+      </section>
+
+      <section class="pd-panel" aria-label="Priority Date 計算">
+        <div>
+          <p class="section-chip">🐾 Priority Date 小筆記</p>
+          <h2>我的 PD</h2>
+          <p>輸入你的 Priority Date，黑咪會幫你算離最新公布日期還差多久喵～</p>
+        </div>
+        <form class="pd-form" id="pdForm">
+          <label for="pdInput">Priority Date</label>
+          <div class="pd-row">
+            <div class="pd-input-combo">
+              <input id="pdInput" name="pdInput" placeholder="例如 01AUG24 或 2024-08-01" autocomplete="off" />
+              <button id="openPdCalendar" class="calendar-trigger" type="button" aria-label="用日曆選擇 Priority Date">📅</button>
+              <input id="pdDatePicker" class="date-picker" type="date" aria-label="用日曆選擇 Priority Date" tabindex="-1" />
+            </div>
+            <button id="savePd" type="submit">🐾 儲存 PD</button>
+          </div>
+        </form>
       </section>
 
       <section class="message-panel" id="messagePanel">
@@ -135,48 +155,6 @@
         </article>
       </section>
 
-      <section class="history-panel" aria-label="排期歷史圖表">
-        <div class="tool-head">
-          <div>
-            <p class="section-chip">📈 排期歷史圖表</p>
-            <h2>EB-3 表 A 台灣排期近兩年走勢</h2>
-          </div>
-          <span id="historySummary">近兩年台灣排期走勢</span>
-        </div>
-        <p class="history-intro" id="historyInsight">標籤上排是公布月份，下排是當月表 A PD 更新到哪一天；黑咪只標重要轉折點，線條保留完整走勢喵～</p>
-        <div class="chart-wrap">
-          <svg id="historyChart" viewBox="0 0 640 260" role="img" aria-label="EB-3 排期歷史走勢圖"></svg>
-        </div>
-        <div class="history-highlights" id="historyHighlights"></div>
-        <div class="history-footer">
-          <div class="history-legend">
-            <span><i class="legend-dot advance"></i>前進</span>
-            <span><i class="legend-dot pause"></i>停滯</span>
-            <span><i class="legend-dot retro"></i>倒退</span>
-          </div>
-          <a id="historySourceLink" class="secondary-action compact-button" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">📋 官方歷史資料</a>
-        </div>
-      </section>
-
-      <section class="pd-panel" aria-label="Priority Date 計算">
-        <div>
-          <p class="section-chip">🐾 Priority Date 小筆記</p>
-          <h2>我的 PD</h2>
-          <p>輸入你的 Priority Date，黑咪會幫你算離最新公布日期還差多久喵～</p>
-        </div>
-        <form class="pd-form" id="pdForm">
-          <label for="pdInput">Priority Date</label>
-          <div class="pd-row">
-            <div class="pd-input-combo">
-              <input id="pdInput" name="pdInput" placeholder="例如 01AUG24 或 2024-08-01" autocomplete="off" />
-              <button id="openPdCalendar" class="calendar-trigger" type="button" aria-label="用日曆選擇 Priority Date">📅</button>
-              <input id="pdDatePicker" class="date-picker" type="date" aria-label="用日曆選擇 Priority Date" tabindex="-1" />
-            </div>
-            <button id="savePd" type="submit">🐾 儲存 PD</button>
-          </div>
-        </form>
-      </section>
-
       <section class="case-panel" aria-label="I-140 進度查詢">
         <div>
           <p class="section-chip">🐾 I-140 Case 小筆記</p>
@@ -194,6 +172,31 @@
           <p class="privacy-note" id="caseNote">可以不輸入直接開官方頁；若想下次少打一點，再選擇儲存在本機。</p>
         </form>
       </section>
+
+      <details class="history-panel history-collapsible" aria-label="排期歷史圖表">
+        <summary class="history-toggle">
+          <span>
+            <span class="section-chip">📈 排期歷史圖表</span>
+            <strong>EB-3 表 A 台灣排期近兩年走勢</strong>
+          </span>
+          <em id="historySummary">近兩年台灣排期走勢</em>
+        </summary>
+        <div class="history-body">
+          <p class="history-intro" id="historyInsight">標籤上排是公布月份，下排是當月表 A PD 更新到哪一天；黑咪只標重要轉折點，線條保留完整走勢喵～</p>
+          <div class="chart-wrap">
+            <svg id="historyChart" viewBox="0 0 640 260" role="img" aria-label="EB-3 排期歷史走勢圖"></svg>
+          </div>
+          <div class="history-highlights" id="historyHighlights"></div>
+          <div class="history-footer">
+            <div class="history-legend">
+              <span><i class="legend-dot advance"></i>前進</span>
+              <span><i class="legend-dot pause"></i>停滯</span>
+              <span><i class="legend-dot retro"></i>倒退</span>
+            </div>
+            <a id="historySourceLink" class="secondary-action compact-button" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">📋 官方歷史資料</a>
+          </div>
+        </div>
+      </details>
 
       <section class="feed" aria-label="最新訊息">
         <div class="feed-head">

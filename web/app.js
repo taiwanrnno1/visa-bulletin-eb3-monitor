@@ -7,6 +7,7 @@ const WORKER_BASE_STORAGE_KEY = "visaBulletinEb3WorkerBase";
 const PUSH_WORKER_BASE = "https://visa-bulletin-eb3-push.t6213982-32d.workers.dev";
 const NTFY_TOPIC = "visa-bulletin-eb3-taiwanrnno1";
 const NTFY_URL = `https://ntfy.sh/${NTFY_TOPIC}`;
+const PUBLIC_SITE_URL = "https://taiwanrnno1.github.io/visa-bulletin-eb3-monitor/";
 
 const state = {
   timer: null,
@@ -41,6 +42,7 @@ const els = {
   checkNow: document.querySelector("#checkNow"),
   enableNotifications: document.querySelector("#enableNotifications"),
   openGuide: document.querySelector("#openGuide"),
+  shareSite: document.querySelector("#shareSite"),
   guideModal: document.querySelector("#guideModal"),
   pdModal: document.querySelector("#pdModal"),
   pdModalText: document.querySelector("#pdModalText"),
@@ -804,6 +806,66 @@ function closeGuide() {
   els.guideModal?.setAttribute("aria-hidden", "true");
 }
 
+async function shareSiteUrl() {
+  const originalLabel = els.shareSite?.textContent || "🔗 分享 / 複製網址";
+  const shareData = {
+    title: "黑咪快報 EB-3 台灣排期",
+    text: "黑咪快報幫你看 EB-3 表 A 台灣排期、算 Priority Date，還能看本月懶人包喵～",
+    url: PUBLIC_SITE_URL,
+  };
+
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+      return;
+    }
+    await copyText(PUBLIC_SITE_URL);
+    flashShareButton("✅ 已複製網址");
+    if (els.shareStatus) {
+      els.shareStatus.textContent = "已複製黑咪快報網址，可以轉傳給朋友喵～";
+    }
+  } catch (error) {
+    if (error?.name === "AbortError") return;
+    try {
+      await copyText(PUBLIC_SITE_URL);
+      flashShareButton("✅ 已複製網址");
+      if (els.shareStatus) {
+        els.shareStatus.textContent = "已複製黑咪快報網址，可以轉傳給朋友喵～";
+      }
+    } catch {
+      if (els.shareStatus) {
+        els.shareStatus.textContent = `請手動複製網址：${PUBLIC_SITE_URL}`;
+      }
+    }
+  }
+
+  function flashShareButton(label) {
+    if (!els.shareSite) return;
+    els.shareSite.textContent = label;
+    window.setTimeout(() => {
+      els.shareSite.textContent = originalLabel;
+    }, 1800);
+  }
+}
+
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.append(textarea);
+  textarea.select();
+  const copied = document.execCommand("copy");
+  textarea.remove();
+  if (!copied) throw new Error("copy failed");
+}
+
 function openPdModal(message) {
   if (!message) return;
   els.pdModalText.textContent = message;
@@ -941,6 +1003,7 @@ async function enableNotifications() {
 els.checkNow?.addEventListener("click", () => checkNow());
 els.enableNotifications?.addEventListener("click", enableNotifications);
 els.openGuide?.addEventListener("click", openGuide);
+els.shareSite?.addEventListener("click", shareSiteUrl);
 document.querySelectorAll("[data-close-guide]").forEach((item) => {
   item.addEventListener("click", closeGuide);
 });
@@ -1030,7 +1093,7 @@ els.openCaseStatus?.addEventListener("click", () => {
 els.copyShareCard?.addEventListener("click", async () => {
   const text = buildShareText(state.current);
   try {
-    await navigator.clipboard.writeText(text);
+    await copyText(text);
     els.shareStatus.textContent = "已複製分享文，黑咪幫你準備好了喵～";
   } catch {
     els.shareStatus.textContent = "瀏覽器暫時不給複製，請手動選取懶人包文字喵～";
