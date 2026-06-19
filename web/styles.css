@@ -960,6 +960,41 @@ body[data-mood="retrogressed"] .brady-strip path {
   line-height: 1.45;
 }
 
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
+  margin: 18px 0 4px;
+  border: 1px solid rgba(47, 143, 167, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: var(--small-shadow);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+  line-height: 1.45;
+  padding: 11px 16px;
+  text-align: center;
+  backdrop-filter: blur(16px);
+}
+
+.site-footer a,
+.guide-legal-note a,
+.legal-back {
+  color: var(--accent-strong);
+  font-weight: 950;
+  text-decoration: none;
+  border-bottom: 2px solid rgba(47, 143, 167, 0.22);
+}
+
+.site-footer a:hover,
+.guide-legal-note a:hover,
+.legal-back:hover {
+  border-bottom-color: var(--accent-strong);
+}
+
 input {
   min-height: 46px;
   width: 100%;
@@ -1670,6 +1705,78 @@ pre {
   color: var(--accent-strong);
   font-size: 14px;
   font-weight: 850;
+}
+
+.guide-legal-note {
+  border: 1px solid rgba(47, 143, 167, 0.14);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.66);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 850;
+  margin-top: 16px;
+  padding: 12px 14px;
+}
+
+.legal-page .shell {
+  max-width: 940px;
+}
+
+.legal-shell {
+  display: grid;
+  gap: 16px;
+}
+
+.legal-back {
+  justify-self: start;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: var(--small-shadow);
+  padding: 10px 14px;
+}
+
+.legal-hero,
+.legal-card {
+  position: relative;
+  z-index: 1;
+  border: 1px solid rgba(47, 143, 167, 0.16);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.legal-hero {
+  padding: clamp(22px, 4vw, 36px);
+}
+
+.legal-hero h1 {
+  color: #17364b;
+  font-size: clamp(28px, 5vw, 46px);
+  line-height: 1.12;
+}
+
+.legal-hero p,
+.legal-card p,
+.legal-card li {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 750;
+  line-height: 1.8;
+}
+
+.legal-card {
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.legal-card h2 {
+  color: #17364b;
+  font-size: clamp(20px, 3vw, 28px);
+}
+
+.legal-card ul {
+  margin: 12px 0 0;
+  padding-left: 22px;
 }
 
 .pd-dialog {

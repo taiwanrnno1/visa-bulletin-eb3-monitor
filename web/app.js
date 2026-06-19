@@ -473,16 +473,17 @@ function buildShareText(current) {
   const kind = movement.kind || "same";
   const currentDate = formatBulletinDateReadable(current.eb3_all_chargeability_final_action_date);
   const previousDate = formatBulletinDateReadable(current.previous_bulletin_eb3_all_chargeability_final_action_date);
+  const footer = `\n\n🔗 黑咪快報：${PUBLIC_SITE_URL}`;
 
   if (kind === "advanced") {
-    return `🐱 好消息！EB-3 排期前進啦！喵～\n\n📅 表 A 本月最新日期：${currentDate}\n🚀 較上個月推進 ${formatDuration(movement.days || 0)}\n📍 上個月數值：${previousDate}\n🐾 快來看看你的 Priority Date 是不是更接近了！`;
+    return `🐱 好消息！EB-3 排期前進啦！喵～\n\n📅 表 A 本月最新日期：${currentDate}\n🚀 較上個月推進 ${formatDuration(movement.days || 0)}\n📍 上個月數值：${previousDate}\n🐾 快來看看你的 Priority Date 是不是更接近了！${footer}`;
   }
 
   if (kind === "retrogressed") {
-    return `🐱 EB-3 排期更新！本月出現倒退喵～\n\n📅 表 A 最新日期：${currentDate}\n⬅️ 較上個月倒退 ${formatDuration(movement.days || 0)}\n📍 上個月日期：${previousDate}\n🐾 別灰心，下個月再持續關注最新動態！`;
+    return `🐱 EB-3 排期更新！本月出現倒退喵～\n\n📅 表 A 最新日期：${currentDate}\n⬅️ 較上個月倒退 ${formatDuration(movement.days || 0)}\n📍 上個月日期：${previousDate}\n🐾 別灰心，下個月再持續關注最新動態！${footer}`;
   }
 
-  return `🐱 EB-3 排期更新！本月維持不變喵～\n\n📅 表 A 最新日期仍為 ${currentDate}\n⏸️ 與上個月相比沒有前進也沒有倒退\n📍 上個月日期：${previousDate}\n耐心等待，下個月再一起關注喵～ 🐾`;
+  return `🐱 EB-3 排期更新！本月維持不變喵～\n\n📅 表 A 最新日期仍為 ${currentDate}\n⏸️ 與上個月相比沒有前進也沒有倒退\n📍 上個月日期：${previousDate}\n耐心等待，下個月再一起關注喵～ 🐾${footer}`;
 }
 
 function renderShareCard(current) {
