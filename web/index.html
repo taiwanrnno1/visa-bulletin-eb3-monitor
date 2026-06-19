@@ -65,25 +65,6 @@
         </div>
       </section>
 
-      <section class="pd-panel" aria-label="Priority Date 計算">
-        <div>
-          <p class="section-chip">🐾 Priority Date 小筆記</p>
-          <h2>我的 PD</h2>
-          <p>輸入你的 Priority Date，黑咪會幫你算離最新公布日期還差多久喵～</p>
-        </div>
-        <form class="pd-form" id="pdForm">
-          <label for="pdInput">Priority Date</label>
-          <div class="pd-row">
-            <div class="pd-input-combo">
-              <input id="pdInput" name="pdInput" placeholder="例如 01AUG24 或 2024-08-01" autocomplete="off" />
-              <button id="openPdCalendar" class="calendar-trigger" type="button" aria-label="用日曆選擇 Priority Date">📅</button>
-              <input id="pdDatePicker" class="date-picker" type="date" aria-label="用日曆選擇 Priority Date" tabindex="-1" />
-            </div>
-            <button id="savePd" type="submit">🐾 儲存 PD</button>
-          </div>
-        </form>
-      </section>
-
       <section class="message-panel" id="messagePanel">
         <div>
           <p class="message-kicker" id="messageKicker">排期狀態</p>
@@ -122,6 +103,25 @@
           <strong id="movementValue">--</strong>
           <a class="mini-link" id="previousSourceLink" href="#" target="_blank" rel="noreferrer">比較基準：--</a>
         </div>
+      </section>
+
+      <section class="pd-panel" aria-label="Priority Date 計算">
+        <div>
+          <p class="section-chip">🐾 Priority Date 小筆記</p>
+          <h2>我的 PD</h2>
+          <p>輸入你的 Priority Date，黑咪會幫你算離最新公布日期還差多久喵～</p>
+        </div>
+        <form class="pd-form" id="pdForm">
+          <label for="pdInput">Priority Date</label>
+          <div class="pd-row">
+            <div class="pd-input-combo">
+              <input id="pdInput" name="pdInput" placeholder="例如 01AUG24 或 2024-08-01" autocomplete="off" />
+              <button id="openPdCalendar" class="calendar-trigger" type="button" aria-label="用日曆選擇 Priority Date">📅</button>
+              <input id="pdDatePicker" class="date-picker" type="date" aria-label="用日曆選擇 Priority Date" tabindex="-1" />
+            </div>
+            <button id="savePd" type="submit">🐾 儲存 PD</button>
+          </div>
+        </form>
       </section>
 
       <section class="pd-result-card" id="pdResult" hidden></section>
