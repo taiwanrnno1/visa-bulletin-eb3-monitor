@@ -10,6 +10,15 @@ from urllib.request import Request, urlopen
 import visa_bulletin_watch as watcher
 
 
+def meaningful_state_changed(previous: dict[str, object], current: dict[str, object]) -> bool:
+    """Ignore checked_at so hourly checks do not create noisy commits."""
+    previous_without_check_time = dict(previous or {})
+    current_without_check_time = dict(current or {})
+    previous_without_check_time.pop("checked_at", None)
+    current_without_check_time.pop("checked_at", None)
+    return previous_without_check_time != current_without_check_time
+
+
 def notify_worker(notice: dict[str, object]) -> None:
     url = os.environ.get("WORKER_BROADCAST_URL", "").strip()
     secret = os.environ.get("WORKER_BROADCAST_SECRET", "").strip()
@@ -35,10 +44,16 @@ def main() -> int:
     previous, current = watcher.fetch_current_result(watcher.STATE_PATH)
     notice = watcher.build_notice(previous, current)
     print(str(notice["message"]))
-    watcher.save_state(watcher.STATE_PATH, current)
+
+    state_changed = meaningful_state_changed(previous, current)
+    if state_changed:
+        watcher.save_state(watcher.STATE_PATH, current)
+        print("偵測到公告月份、排期數值或歷史資料變化，已更新網站資料。")
+    else:
+        print("公告內容沒有變化；略過 checked_at，避免產生不必要的 GitHub commit。")
 
     if not notice["notify"]:
-        print("沒有新公告，這次只更新最後檢查時間。")
+        print("沒有新公告。")
         return 0
 
     if os.environ.get("VISA_BULLETIN_NTFY_TOPIC", "").strip():
