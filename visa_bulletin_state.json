@@ -1,6 +1,6 @@
 {
   "bulletin": "Visa Bulletin For July 2026",
-  "checked_at": "2026-06-25T01:25:49+00:00",
+  "checked_at": "2026-06-25T02:27:00+00:00",
   "eb3_all_chargeability_final_action_date": "01AUG24",
   "history": [
     {
@@ -134,6 +134,13 @@
       "eb3_all_chargeability_final_action_date": "01JUN23",
       "month": 2,
       "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-february-2026.html",
+      "year": 2026
+    },
+    {
+      "bulletin": "Visa Bulletin For March 2026",
+      "eb3_all_chargeability_final_action_date": "01OCT23",
+      "month": 3,
+      "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-march-2026.html",
       "year": 2026
     },
     {
