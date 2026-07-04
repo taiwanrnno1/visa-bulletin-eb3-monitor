@@ -37,7 +37,6 @@ const els = {
   movementValue: document.querySelector("#movementValue"),
   previousSourceLink: document.querySelector("#previousSourceLink"),
   bulletinValue: document.querySelector("#bulletinValue"),
-  checkedValue: document.querySelector("#checkedValue"),
   noticeText: document.querySelector("#noticeText"),
   checkNow: document.querySelector("#checkNow"),
   enableNotifications: document.querySelector("#enableNotifications"),
@@ -77,22 +76,6 @@ const els = {
   historyHighlights: document.querySelector("#historyHighlights"),
   historySourceLink: document.querySelector("#historySourceLink"),
 };
-
-function formatChecked(value) {
-  if (!value) return "--";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  const parts = new Intl.DateTimeFormat("zh-TW", {
-    timeZone: "Asia/Taipei",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).formatToParts(date);
-  const get = (type) => parts.find((part) => part.type === type)?.value || "";
-  return `${get("month")}月${get("day")}日 台灣時間 ${get("hour")}:${get("minute")}`;
-}
 
 function setStatus(text, kind = "idle") {
   if (!els.connectionStatus) return;
@@ -779,7 +762,6 @@ function renderState(current, { celebrate = false } = {}) {
     els.previousSourceLink.hidden = true;
   }
   els.bulletinValue.textContent = current.bulletin || "--";
-  els.checkedValue.textContent = `🕒 最後更新時間 UTC/GMT +08:00：${formatChecked(current.checked_at)}`;
   renderMood(current.movement_from_previous_bulletin, celebrate);
   updatePdResult();
   renderProgressCard();
