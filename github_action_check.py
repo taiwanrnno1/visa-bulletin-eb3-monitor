@@ -41,7 +41,22 @@ def notify_worker(notice: dict[str, object]) -> None:
 
 
 def main() -> int:
-    previous, current = watcher.fetch_current_result(watcher.STATE_PATH)
+    try:
+        previous, current = watcher.fetch_current_result(watcher.STATE_PATH)
+    except watcher.UpstreamFetchError as exc:
+        cached = watcher.load_state(watcher.STATE_PATH)
+        if not cached:
+            raise
+        print(f"::warning title=Official Visa Bulletin temporarily unavailable::{exc}")
+        print("官方網站暫時拒絕或無法回應，保留上次成功抓到的資料。")
+        print(
+            "目前快取："
+            f"{cached.get('bulletin', '未知公告')} / "
+            f"EB-3 All Chargeability {cached.get('eb3_all_chargeability_final_action_date', '未知')}"
+        )
+        print("沒有送通知；下一次排程會再試。")
+        return 0
+
     notice = watcher.build_notice(previous, current)
     print(str(notice["message"]))
 

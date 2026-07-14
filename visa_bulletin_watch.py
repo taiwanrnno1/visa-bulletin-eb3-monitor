@@ -13,18 +13,31 @@ import json
 import os
 import re
 import sys
+import time
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Iterable
 from urllib.parse import urljoin
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
 INDEX_URL = "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html"
 STATE_PATH = Path(__file__).with_name("visa_bulletin_state.json")
 ENV_PATH = Path(__file__).with_name(".env")
+FETCH_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Safari/605.1.15"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+}
+TEMPORARY_HTTP_STATUS_CODES = {403, 408, 429, 500, 502, 503, 504}
 MONTHS = {
     "january": 1,
     "february": 2,
@@ -61,6 +74,10 @@ class BulletinLink:
     url: str
     year: int
     month: int
+
+
+class UpstreamFetchError(RuntimeError):
+    """Raised when the official Visa Bulletin site blocks or times out."""
 
 
 class LinkParser(HTMLParser):
@@ -103,15 +120,24 @@ def normalize_text(value: str) -> str:
     return re.sub(r"\s+", " ", value.replace("\xa0", " ")).strip()
 
 
-def fetch(url: str) -> str:
-    request = Request(
-        url,
-        headers={
-            "User-Agent": "VisaBulletinWatch/1.0 (+local personal monitor)",
-        },
-    )
-    with urlopen(request, timeout=30) as response:
-        return response.read().decode("utf-8", errors="replace")
+def fetch(url: str, attempts: int = 2) -> str:
+    last_error = "unknown error"
+    for attempt in range(1, attempts + 1):
+        request = Request(url, headers=FETCH_HEADERS)
+        try:
+            with urlopen(request, timeout=30) as response:
+                return response.read().decode("utf-8", errors="replace")
+        except HTTPError as exc:
+            last_error = f"HTTP {exc.code}: {exc.reason}"
+            if exc.code not in TEMPORARY_HTTP_STATUS_CODES:
+                raise
+        except URLError as exc:
+            last_error = str(exc.reason)
+
+        if attempt < attempts:
+            time.sleep(2 * attempt)
+
+    raise UpstreamFetchError(f"Official Visa Bulletin site is temporarily unavailable ({last_error}).")
 
 
 def load_env_file(path: Path) -> None:
@@ -309,6 +335,63 @@ def save_state(path: Path, state: dict[str, object]) -> None:
     path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def history_value_for_bulletin(
+    state: dict[str, object],
+    bulletin: BulletinLink | None,
+) -> object | None:
+    if bulletin is None:
+        return None
+
+    for item in state.get("history", []):
+        if not isinstance(item, dict):
+            continue
+        if item.get("source_url") == bulletin.url:
+            return item.get("eb3_all_chargeability_final_action_date")
+        if item.get("year") == bulletin.year and item.get("month") == bulletin.month:
+            return item.get("eb3_all_chargeability_final_action_date")
+
+    return None
+
+
+def merge_history(
+    previous_state: dict[str, object],
+    latest: BulletinLink,
+    latest_value: object,
+    previous_bulletin: BulletinLink | None,
+    previous_month_value: object | None,
+    limit: int = 24,
+) -> list[dict[str, object]]:
+    history_by_month: dict[tuple[int, int], dict[str, object]] = {}
+
+    for item in previous_state.get("history", []):
+        if not isinstance(item, dict):
+            continue
+        year = item.get("year")
+        month = item.get("month")
+        if isinstance(year, int) and isinstance(month, int):
+            history_by_month[(year, month)] = dict(item)
+
+    if previous_bulletin is not None and previous_month_value:
+        history_by_month[(previous_bulletin.year, previous_bulletin.month)] = {
+            "bulletin": previous_bulletin.label,
+            "source_url": previous_bulletin.url,
+            "eb3_all_chargeability_final_action_date": previous_month_value,
+            "year": previous_bulletin.year,
+            "month": previous_bulletin.month,
+        }
+
+    history_by_month[(latest.year, latest.month)] = {
+        "bulletin": latest.label,
+        "source_url": latest.url,
+        "eb3_all_chargeability_final_action_date": latest_value,
+        "year": latest.year,
+        "month": latest.month,
+    }
+
+    ordered = [history_by_month[key] for key in sorted(history_by_month)]
+    return ordered[-limit:]
+
+
 def parse_cutoff_date(value: object) -> date | None:
     text = str(value or "").strip().upper()
     match = re.fullmatch(r"(\d{2})([A-Z]{3})(\d{2})", text)
@@ -420,6 +503,7 @@ def build_notice(
 
 
 def fetch_current_result(state_path: Path) -> tuple[dict[str, object], dict[str, object]]:
+    previous = load_state(state_path)
     index_html = fetch(INDEX_URL)
     links = parse_bulletin_links(index_html)
     latest = latest_bulletin_link(links)
@@ -428,32 +512,24 @@ def fetch_current_result(state_path: Path) -> tuple[dict[str, object], dict[str,
     value = extract_eb3_all_chargeability(html_to_text(bulletin_html))
 
     checked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    previous = load_state(state_path)
     previous_month_value = None
     previous_month_label = None
     previous_month_url = None
     if previous_bulletin is not None:
-        previous_month_html = fetch(previous_bulletin.url)
-        previous_month_value = extract_eb3_all_chargeability(html_to_text(previous_month_html))
         previous_month_label = previous_bulletin.label
         previous_month_url = previous_bulletin.url
+        previous_month_value = history_value_for_bulletin(previous, previous_bulletin)
+        if previous_month_value is None:
+            previous_month_html = fetch(previous_bulletin.url)
+            previous_month_value = extract_eb3_all_chargeability(html_to_text(previous_month_html))
 
-    history: list[dict[str, object]] = []
-    for item in recent_bulletin_links(links):
-        try:
-            item_html = bulletin_html if item.url == latest.url else fetch(item.url)
-            item_value = extract_eb3_all_chargeability(html_to_text(item_html))
-        except Exception:
-            continue
-        history.append(
-            {
-                "bulletin": item.label,
-                "source_url": item.url,
-                "eb3_all_chargeability_final_action_date": item_value,
-                "year": item.year,
-                "month": item.month,
-            }
-        )
+    history = merge_history(
+        previous,
+        latest,
+        value,
+        previous_bulletin,
+        previous_month_value,
+    )
 
     current = {
         "checked_at": checked_at,
@@ -474,7 +550,21 @@ def fetch_current_result(state_path: Path) -> tuple[dict[str, object], dict[str,
 
 
 def check_once(state_path: Path, dry_run: bool) -> int:
-    previous, current = fetch_current_result(state_path)
+    try:
+        previous, current = fetch_current_result(state_path)
+    except UpstreamFetchError as exc:
+        cached = load_state(state_path)
+        if not cached:
+            raise
+        print(f"官方 Visa Bulletin 網站暫時無法讀取：{exc}")
+        print("保留上次成功抓到的資料，下一次排程會再試。")
+        print(
+            "目前快取："
+            f"{cached.get('bulletin', '未知公告')} / "
+            f"EB-3 All Chargeability {cached.get('eb3_all_chargeability_final_action_date', '未知')}"
+        )
+        return 0
+
     notice = build_notice(previous, current)
 
     if not dry_run:

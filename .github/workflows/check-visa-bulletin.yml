@@ -2,7 +2,7 @@ name: Check Visa Bulletin
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "17 */4 * * *"
   workflow_dispatch:
 
 permissions:

@@ -54,7 +54,7 @@ python3 visa_bulletin_watch.py --test-notification
 The free setup is:
 
 - GitHub Pages hosts the Chinese dashboard.
-- GitHub Actions checks the official Visa Bulletin every 30 minutes.
+- GitHub Actions checks the official Visa Bulletin every 4 hours.
 - ntfy sends phone notifications when a new monthly bulletin is published, even
   if the EB-3 date did not move.
 
