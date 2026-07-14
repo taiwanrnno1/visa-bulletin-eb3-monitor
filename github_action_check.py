@@ -60,7 +60,9 @@ def main() -> int:
     if current.get("official_fetch_error"):
         print(
             "::warning title=Official Visa Bulletin blocked; fallback used::"
-            f"{current['official_fetch_error']} / fallback: {current.get('fallback_source_url')}"
+            f"{current['official_fetch_error']} / "
+            f"fallback data: {current.get('fallback_source_url')} / "
+            f"cross-check: {current.get('fallback_confirmation_source_url')}"
         )
 
     notice = watcher.build_notice(previous, current)

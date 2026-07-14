@@ -26,6 +26,7 @@ from urllib.request import Request, urlopen
 
 INDEX_URL = "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html"
 FALLBACK_CURRENT_URL = "https://visa-bulletin.us/employment-based/all/?action_type=final_action"
+FALLBACK_CONFIRMATION_URL = "https://groups.google.com/g/visa-bulletin-alerts"
 STATE_PATH = Path(__file__).with_name("visa_bulletin_state.json")
 ENV_PATH = Path(__file__).with_name(".env")
 FETCH_HEADERS = {
@@ -498,6 +499,52 @@ def parse_fallback_current_result(html: str) -> tuple[BulletinLink, str]:
     return latest, cutoff
 
 
+def parse_latest_bulletin_mention(html: str) -> BulletinLink:
+    matches = re.findall(
+        r"Visa Bulletin For\s+([A-Za-z]+)\s+(\d{4})",
+        html,
+        flags=re.IGNORECASE,
+    )
+    candidates: list[BulletinLink] = []
+    for month_name, year_text in matches:
+        month = MONTHS.get(month_name.lower())
+        if month is None:
+            continue
+        year = int(year_text)
+        candidates.append(
+            BulletinLink(
+                label=f"Visa Bulletin For {MONTH_NAMES[month]} {year}",
+                url=official_bulletin_url(year, month),
+                year=year,
+                month=month,
+            )
+        )
+
+    if not candidates:
+        raise RuntimeError("Could not find a Visa Bulletin month in fallback confirmation source.")
+
+    return max(candidates, key=lambda item: (item.year, item.month))
+
+
+def fetch_fallback_confirmation() -> BulletinLink:
+    html = fetch(FALLBACK_CONFIRMATION_URL)
+    return parse_latest_bulletin_mention(html)
+
+
+def verify_fallback_sources(data_source_latest: BulletinLink) -> BulletinLink:
+    confirmation_latest = fetch_fallback_confirmation()
+    if (confirmation_latest.year, confirmation_latest.month) != (
+        data_source_latest.year,
+        data_source_latest.month,
+    ):
+        raise UpstreamFetchError(
+            "Fallback cross-check failed: "
+            f"{FALLBACK_CURRENT_URL} reports {data_source_latest.label}, "
+            f"but {FALLBACK_CONFIRMATION_URL} reports {confirmation_latest.label}."
+        )
+    return confirmation_latest
+
+
 def fetch_current_result_from_fallback(
     state_path: Path,
     official_error: Exception,
@@ -505,6 +552,7 @@ def fetch_current_result_from_fallback(
     previous = load_state(state_path)
     fallback_html = fetch(FALLBACK_CURRENT_URL)
     latest, value = parse_fallback_current_result(fallback_html)
+    confirmation_latest = verify_fallback_sources(latest)
     previous_bulletin, previous_month_value = previous_history_bulletin(
         previous,
         latest.year,
@@ -529,8 +577,10 @@ def fetch_current_result_from_fallback(
         "previous_bulletin_source_url": previous_bulletin.url if previous_bulletin else None,
         "previous_bulletin_eb3_all_chargeability_final_action_date": previous_month_value,
         "history": history,
-        "data_source": "visa-bulletin.us fallback",
+        "data_source": "visa-bulletin.us fallback cross-checked with Google Groups",
         "fallback_source_url": FALLBACK_CURRENT_URL,
+        "fallback_confirmation_source_url": FALLBACK_CONFIRMATION_URL,
+        "fallback_confirmation_bulletin": confirmation_latest.label,
         "official_fetch_error": str(official_error),
     }
     current["movement_from_previous_bulletin"] = describe_movement(

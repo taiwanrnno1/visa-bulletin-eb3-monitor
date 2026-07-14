@@ -1,8 +1,10 @@
 {
   "bulletin": "Visa Bulletin For July 2026",
-  "checked_at": "2026-07-14T23:19:31+00:00",
-  "data_source": "visa-bulletin.us fallback",
+  "checked_at": "2026-07-14T23:30:59+00:00",
+  "data_source": "visa-bulletin.us fallback cross-checked with Google Groups",
   "eb3_all_chargeability_final_action_date": "01AUG24",
+  "fallback_confirmation_bulletin": "Visa Bulletin For July 2026",
+  "fallback_confirmation_source_url": "https://groups.google.com/g/visa-bulletin-alerts",
   "fallback_source_url": "https://visa-bulletin.us/employment-based/all/?action_type=final_action",
   "history": [
     {
