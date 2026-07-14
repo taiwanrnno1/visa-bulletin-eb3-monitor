@@ -1,7 +1,9 @@
 {
   "bulletin": "Visa Bulletin For July 2026",
-  "checked_at": "2026-07-14T13:05:17+00:00",
+  "checked_at": "2026-07-14T23:19:31+00:00",
+  "data_source": "visa-bulletin.us fallback",
   "eb3_all_chargeability_final_action_date": "01AUG24",
+  "fallback_source_url": "https://visa-bulletin.us/employment-based/all/?action_type=final_action",
   "history": [
     {
       "bulletin": "Visa Bulletin For August 2024",
@@ -178,6 +180,7 @@
     "label": "\u524d\u9032 61 \u5929\uff0c\u7d04 2.0 \u500b\u6708",
     "months": 2.0
   },
+  "official_fetch_error": "Official Visa Bulletin site is temporarily unavailable (HTTP 403: Forbidden).",
   "previous_bulletin": "Visa Bulletin For June 2026",
   "previous_bulletin_eb3_all_chargeability_final_action_date": "01JUN24",
   "previous_bulletin_source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-june-2026.html",

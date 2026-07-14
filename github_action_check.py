@@ -57,6 +57,12 @@ def main() -> int:
         print("沒有送通知；下一次排程會再試。")
         return 0
 
+    if current.get("official_fetch_error"):
+        print(
+            "::warning title=Official Visa Bulletin blocked; fallback used::"
+            f"{current['official_fetch_error']} / fallback: {current.get('fallback_source_url')}"
+        )
+
     notice = watcher.build_notice(previous, current)
     print(str(notice["message"]))
 

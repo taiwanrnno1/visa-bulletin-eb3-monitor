@@ -25,6 +25,7 @@ from urllib.request import Request, urlopen
 
 
 INDEX_URL = "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html"
+FALLBACK_CURRENT_URL = "https://visa-bulletin.us/employment-based/all/?action_type=final_action"
 STATE_PATH = Path(__file__).with_name("visa_bulletin_state.json")
 ENV_PATH = Path(__file__).with_name(".env")
 FETCH_HEADERS = {
@@ -65,6 +66,21 @@ DATE_MONTHS = {
     "OCT": 10,
     "NOV": 11,
     "DEC": 12,
+}
+MONTH_NAMES = {number: name.title() for name, number in MONTHS.items()}
+MONTH_ABBREVIATIONS = {
+    "JAN": "January",
+    "FEB": "February",
+    "MAR": "March",
+    "APR": "April",
+    "MAY": "May",
+    "JUN": "June",
+    "JUL": "July",
+    "AUG": "August",
+    "SEP": "September",
+    "OCT": "October",
+    "NOV": "November",
+    "DEC": "December",
 }
 
 
@@ -408,6 +424,123 @@ def parse_cutoff_date(value: object) -> date | None:
     return date(full_year, month, day)
 
 
+def official_bulletin_url(year: int, month: int) -> str:
+    fiscal_year = year + 1 if month >= 10 else year
+    month_name = MONTH_NAMES[month].lower()
+    return (
+        "https://travel.state.gov/content/travel/en/legal/visa-law0/"
+        f"visa-bulletin/{fiscal_year}/visa-bulletin-for-{month_name}-{year}.html"
+    )
+
+
+def format_fallback_cutoff(month_abbreviation: str, day: str, year: str) -> str:
+    return f"{int(day):02d}{month_abbreviation.upper()}{int(year) % 100:02d}"
+
+
+def previous_history_bulletin(
+    state: dict[str, object],
+    latest_year: int,
+    latest_month: int,
+) -> tuple[BulletinLink | None, object | None]:
+    candidates: list[dict[str, object]] = []
+    for item in state.get("history", []):
+        if not isinstance(item, dict):
+            continue
+        year = item.get("year")
+        month = item.get("month")
+        if not isinstance(year, int) or not isinstance(month, int):
+            continue
+        if (year, month) < (latest_year, latest_month):
+            candidates.append(item)
+
+    if not candidates:
+        return None, None
+
+    item = max(candidates, key=lambda value: (int(value["year"]), int(value["month"])))
+    year = int(item["year"])
+    month = int(item["month"])
+    bulletin = BulletinLink(
+        label=str(item.get("bulletin") or f"Visa Bulletin For {MONTH_NAMES[month]} {year}"),
+        url=str(item.get("source_url") or official_bulletin_url(year, month)),
+        year=year,
+        month=month,
+    )
+    return bulletin, item.get("eb3_all_chargeability_final_action_date")
+
+
+def parse_fallback_current_result(html: str) -> tuple[BulletinLink, str]:
+    text = html_to_text(html)
+    match = re.search(
+        r"EB-3:\s*Skilled Workers,\s*Professionals\s+"
+        r"([A-Za-z]{3})\s+(\d{4})\s+"
+        r"([A-Za-z]{3})\s+(\d{2}),\s+(\d{4})",
+        text,
+        flags=re.IGNORECASE,
+    )
+    if not match:
+        raise RuntimeError("Could not find EB-3 All Other Countries final action data in fallback page.")
+
+    bulletin_month_abbreviation = match.group(1).upper()
+    cutoff_month_abbreviation = match.group(3).upper()
+    bulletin_month_name = MONTH_ABBREVIATIONS.get(bulletin_month_abbreviation)
+    bulletin_month = DATE_MONTHS.get(bulletin_month_abbreviation)
+    if bulletin_month_name is None or bulletin_month is None:
+        raise RuntimeError(f"Unknown fallback bulletin month: {match.group(1)}")
+
+    bulletin_year = int(match.group(2))
+    cutoff = format_fallback_cutoff(cutoff_month_abbreviation, match.group(4), match.group(5))
+    latest = BulletinLink(
+        label=f"Visa Bulletin For {bulletin_month_name} {bulletin_year}",
+        url=official_bulletin_url(bulletin_year, bulletin_month),
+        year=bulletin_year,
+        month=bulletin_month,
+    )
+    return latest, cutoff
+
+
+def fetch_current_result_from_fallback(
+    state_path: Path,
+    official_error: Exception,
+) -> tuple[dict[str, object], dict[str, object]]:
+    previous = load_state(state_path)
+    fallback_html = fetch(FALLBACK_CURRENT_URL)
+    latest, value = parse_fallback_current_result(fallback_html)
+    previous_bulletin, previous_month_value = previous_history_bulletin(
+        previous,
+        latest.year,
+        latest.month,
+    )
+
+    checked_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    history = merge_history(
+        previous,
+        latest,
+        value,
+        previous_bulletin,
+        previous_month_value,
+    )
+
+    current = {
+        "checked_at": checked_at,
+        "bulletin": latest.label,
+        "source_url": latest.url,
+        "eb3_all_chargeability_final_action_date": value,
+        "previous_bulletin": previous_bulletin.label if previous_bulletin else None,
+        "previous_bulletin_source_url": previous_bulletin.url if previous_bulletin else None,
+        "previous_bulletin_eb3_all_chargeability_final_action_date": previous_month_value,
+        "history": history,
+        "data_source": "visa-bulletin.us fallback",
+        "fallback_source_url": FALLBACK_CURRENT_URL,
+        "official_fetch_error": str(official_error),
+    }
+    current["movement_from_previous_bulletin"] = describe_movement(
+        previous_month_value,
+        value,
+    )
+
+    return previous, current
+
+
 def describe_movement(previous_value: object, current_value: object) -> dict[str, object]:
     previous_text = str(previous_value or "").strip().upper()
     current_text = str(current_value or "").strip().upper()
@@ -504,7 +637,11 @@ def build_notice(
 
 def fetch_current_result(state_path: Path) -> tuple[dict[str, object], dict[str, object]]:
     previous = load_state(state_path)
-    index_html = fetch(INDEX_URL)
+    try:
+        index_html = fetch(INDEX_URL)
+    except UpstreamFetchError as exc:
+        return fetch_current_result_from_fallback(state_path, exc)
+
     links = parse_bulletin_links(index_html)
     latest = latest_bulletin_link(links)
     previous_bulletin = previous_bulletin_link(links, latest)
@@ -570,6 +707,8 @@ def check_once(state_path: Path, dry_run: bool) -> int:
     if not dry_run:
         save_state(state_path, current)
 
+    if current.get("official_fetch_error"):
+        print(f"官方網站暫時無法讀取，已改用備援資料：{current.get('fallback_source_url')}")
     print(str(notice["message"]))
     if notice["notify"] and not dry_run:
         send_ntfy(str(notice["title"]), str(notice["message"]))
