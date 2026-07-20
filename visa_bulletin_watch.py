@@ -195,6 +195,37 @@ def send_ntfy(title: str, message: str) -> None:
         response.read()
 
 
+def send_web_push_broadcast(notice: dict[str, object]) -> dict[str, object]:
+    url = os.environ.get("WORKER_BROADCAST_URL", "").strip()
+    secret = os.environ.get("WORKER_BROADCAST_SECRET", "").strip()
+    if not url or not secret:
+        raise RuntimeError(
+            "Missing WORKER_BROADCAST_URL or WORKER_BROADCAST_SECRET; "
+            "browser push was not sent."
+        )
+
+    url = url.rstrip("/")
+    if not url.endswith("/api/broadcast"):
+        url = f"{url}/api/broadcast"
+
+    request = Request(
+        url,
+        data=json.dumps({"notice": notice}).encode("utf-8"),
+        method="POST",
+        headers={
+            "Authorization": f"Bearer {secret}",
+            "Content-Type": "application/json; charset=utf-8",
+            "User-Agent": "VisaBulletinWatch/1.0 (+automation)",
+        },
+    )
+    with urlopen(request, timeout=45) as response:
+        payload = json.loads(response.read().decode("utf-8", errors="replace"))
+
+    if not payload.get("ok"):
+        raise RuntimeError(f"Browser push broadcast failed: {payload}")
+    return payload
+
+
 def format_notice_date(value: object) -> str:
     text = str(value or "").strip().upper()
     match = re.fullmatch(r"(\d{2})([A-Z]{3})(\d{2})", text)
@@ -531,8 +562,12 @@ def fetch_fallback_confirmation() -> BulletinLink:
     return parse_latest_bulletin_mention(html)
 
 
-def verify_fallback_sources(data_source_latest: BulletinLink) -> BulletinLink:
-    confirmation_latest = fetch_fallback_confirmation()
+def verify_fallback_sources(
+    data_source_latest: BulletinLink,
+    confirmation_latest: BulletinLink | None = None,
+) -> BulletinLink:
+    if confirmation_latest is None:
+        confirmation_latest = fetch_fallback_confirmation()
     if (confirmation_latest.year, confirmation_latest.month) != (
         data_source_latest.year,
         data_source_latest.month,
@@ -547,12 +582,13 @@ def verify_fallback_sources(data_source_latest: BulletinLink) -> BulletinLink:
 
 def fetch_current_result_from_fallback(
     state_path: Path,
-    official_error: Exception,
+    official_error: Exception | None = None,
 ) -> tuple[dict[str, object], dict[str, object]]:
     previous = load_state(state_path)
+    confirmation_latest = fetch_fallback_confirmation()
     fallback_html = fetch(FALLBACK_CURRENT_URL)
     latest, value = parse_fallback_current_result(fallback_html)
-    confirmation_latest = verify_fallback_sources(latest)
+    confirmation_latest = verify_fallback_sources(latest, confirmation_latest)
     previous_bulletin, previous_month_value = previous_history_bulletin(
         previous,
         latest.year,
@@ -577,12 +613,13 @@ def fetch_current_result_from_fallback(
         "previous_bulletin_source_url": previous_bulletin.url if previous_bulletin else None,
         "previous_bulletin_eb3_all_chargeability_final_action_date": previous_month_value,
         "history": history,
-        "data_source": "visa-bulletin.us fallback cross-checked with Google Groups",
+        "data_source": "Google Groups announcement cross-checked with visa-bulletin.us structured data",
         "fallback_source_url": FALLBACK_CURRENT_URL,
         "fallback_confirmation_source_url": FALLBACK_CONFIRMATION_URL,
         "fallback_confirmation_bulletin": confirmation_latest.label,
-        "official_fetch_error": str(official_error),
     }
+    if official_error is not None:
+        current["official_fetch_error"] = str(official_error)
     current["movement_from_previous_bulletin"] = describe_movement(
         previous_month_value,
         value,
@@ -688,9 +725,15 @@ def build_notice(
 def fetch_current_result(state_path: Path) -> tuple[dict[str, object], dict[str, object]]:
     previous = load_state(state_path)
     try:
-        index_html = fetch(INDEX_URL)
-    except UpstreamFetchError as exc:
-        return fetch_current_result_from_fallback(state_path, exc)
+        return fetch_current_result_from_fallback(state_path)
+    except (UpstreamFetchError, HTTPError, URLError, RuntimeError) as fallback_error:
+        try:
+            index_html = fetch(INDEX_URL)
+        except (UpstreamFetchError, HTTPError, URLError) as official_error:
+            raise UpstreamFetchError(
+                f"Google Groups/structured source check failed ({fallback_error}); "
+                f"official source also failed ({official_error})."
+            ) from official_error
 
     links = parse_bulletin_links(index_html)
     latest = latest_bulletin_link(links)

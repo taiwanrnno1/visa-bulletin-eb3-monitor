@@ -3,10 +3,6 @@
 
 from __future__ import annotations
 
-import os
-import json
-from urllib.request import Request, urlopen
-
 import visa_bulletin_watch as watcher
 
 
@@ -17,27 +13,6 @@ def meaningful_state_changed(previous: dict[str, object], current: dict[str, obj
     previous_without_check_time.pop("checked_at", None)
     current_without_check_time.pop("checked_at", None)
     return previous_without_check_time != current_without_check_time
-
-
-def notify_worker(notice: dict[str, object]) -> None:
-    url = os.environ.get("WORKER_BROADCAST_URL", "").strip()
-    secret = os.environ.get("WORKER_BROADCAST_SECRET", "").strip()
-    if not url or not secret:
-        print("沒有設定 Cloudflare Worker broadcast，所以略過瀏覽器推播。")
-        return
-
-    request = Request(
-        url,
-        data=json.dumps({"notice": notice}).encode("utf-8"),
-        method="POST",
-        headers={
-            "Authorization": f"Bearer {secret}",
-            "Content-Type": "application/json; charset=utf-8",
-            "User-Agent": "VisaBulletinWatch/1.0 (+github-actions)",
-        },
-    )
-    with urlopen(request, timeout=45) as response:
-        print(response.read().decode("utf-8", errors="replace"))
 
 
 def main() -> int:
@@ -79,12 +54,11 @@ def main() -> int:
         print("沒有新公告。")
         return 0
 
-    if os.environ.get("VISA_BULLETIN_NTFY_TOPIC", "").strip():
-        watcher.send_ntfy(str(notice["title"]), str(notice["message"]))
-        print("ntfy 手機通知已送出。")
-    else:
-        print("沒有設定 ntfy topic，所以只更新網站檔案。")
-    notify_worker(notice)
+    push_result = watcher.send_web_push_broadcast(notice)
+    print(
+        "瀏覽器推播完成："
+        f"sent={push_result.get('sent', 0)}, failed={push_result.get('failed', 0)}"
+    )
     return 0
 
 
