@@ -1,7 +1,7 @@
 {
   "bulletin": "Visa Bulletin For August 2026",
-  "checked_at": "2026-07-20T16:42:33+00:00",
-  "data_source": "visa-bulletin.us fallback cross-checked with Google Groups",
+  "checked_at": "2026-07-20T16:53:56+00:00",
+  "data_source": "Google Groups announcement cross-checked with visa-bulletin.us structured data",
   "eb3_all_chargeability_final_action_date": "01SEP24",
   "fallback_confirmation_bulletin": "Visa Bulletin For August 2026",
   "fallback_confirmation_source_url": "https://groups.google.com/g/visa-bulletin-alerts",
@@ -182,7 +182,6 @@
     "label": "\u524d\u9032 31 \u5929\uff0c\u7d04 1.0 \u500b\u6708",
     "months": 1.0
   },
-  "official_fetch_error": "Official Visa Bulletin site is temporarily unavailable (HTTP 403: Forbidden).",
   "previous_bulletin": "Visa Bulletin For July 2026",
   "previous_bulletin_eb3_all_chargeability_final_action_date": "01AUG24",
   "previous_bulletin_source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-july-2026.html",

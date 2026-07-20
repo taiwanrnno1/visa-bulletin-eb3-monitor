@@ -2,7 +2,7 @@ name: Check Visa Bulletin
 
 on:
   schedule:
-    - cron: "17 */4 * * *"
+    - cron: "17 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -20,7 +20,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Check official Visa Bulletin
+      - name: Run monitor tests
+        run: python -m unittest -v test_visa_bulletin_watch.py
+
+      - name: Check Google Groups and Visa Bulletin data
         env:
           VISA_BULLETIN_NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           WORKER_BROADCAST_URL: ${{ secrets.WORKER_BROADCAST_URL }}
