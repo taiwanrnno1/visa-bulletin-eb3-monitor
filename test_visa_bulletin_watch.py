@@ -125,6 +125,5 @@ class SourcePriorityTests(unittest.TestCase):
         self.assertEqual(result["sent"], 2)
         self.assertEqual(result["failed"], 1)
 
-
 if __name__ == "__main__":
     unittest.main()
