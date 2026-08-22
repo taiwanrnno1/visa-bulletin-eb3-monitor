@@ -1,19 +1,12 @@
 {
-  "bulletin": "Visa Bulletin For August 2026",
-  "checked_at": "2026-07-27T04:59:54+00:00",
+  "bulletin": "Visa Bulletin For September 2026",
+  "checked_at": "2026-08-22T03:07:18+00:00",
   "data_source": "Google Groups announcement cross-checked with visa-bulletin.us structured data",
   "eb3_all_chargeability_final_action_date": "01SEP24",
-  "fallback_confirmation_bulletin": "Visa Bulletin For August 2026",
+  "fallback_confirmation_bulletin": "Visa Bulletin For September 2026",
   "fallback_confirmation_source_url": "https://groups.google.com/g/visa-bulletin-alerts",
   "fallback_source_url": "https://visa-bulletin.us/employment-based/all/?action_type=final_action",
   "history": [
-    {
-      "bulletin": "Visa Bulletin For September 2024",
-      "eb3_all_chargeability_final_action_date": "01DEC20",
-      "month": 9,
-      "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2024/visa-bulletin-for-september-2024.html",
-      "year": 2024
-    },
     {
       "bulletin": "Visa Bulletin For October 2024",
       "eb3_all_chargeability_final_action_date": "15NOV22",
@@ -174,16 +167,23 @@
       "month": 8,
       "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-august-2026.html",
       "year": 2026
+    },
+    {
+      "bulletin": "Visa Bulletin For September 2026",
+      "eb3_all_chargeability_final_action_date": "01SEP24",
+      "month": 9,
+      "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-september-2026.html",
+      "year": 2026
     }
   ],
   "movement_from_previous_bulletin": {
-    "days": 31,
-    "kind": "advanced",
-    "label": "\u524d\u9032 31 \u5929\uff0c\u7d04 1.0 \u500b\u6708",
-    "months": 1.0
+    "days": 0,
+    "kind": "same",
+    "label": "\u6c92\u6709\u8b8a\u5316",
+    "months": 0
   },
-  "previous_bulletin": "Visa Bulletin For July 2026",
-  "previous_bulletin_eb3_all_chargeability_final_action_date": "01AUG24",
-  "previous_bulletin_source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-july-2026.html",
-  "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-august-2026.html"
+  "previous_bulletin": "Visa Bulletin For August 2026",
+  "previous_bulletin_eb3_all_chargeability_final_action_date": "01SEP24",
+  "previous_bulletin_source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-august-2026.html",
+  "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/visa-bulletin-for-september-2026.html"
 }
