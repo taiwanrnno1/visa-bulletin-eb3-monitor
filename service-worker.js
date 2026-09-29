@@ -24,6 +24,7 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,
+      tag: payload.tag || "visa-bulletin-eb3",
       icon: "assets/heimi-app-icon-192.png",
       badge: "assets/heimi-app-icon-192.png",
       data: { url: payload.url || "./" },

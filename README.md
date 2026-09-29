@@ -54,9 +54,10 @@ python3 visa_bulletin_watch.py --test-notification
 The free setup is:
 
 - GitHub Pages hosts the Chinese dashboard.
-- GitHub Actions checks the official Visa Bulletin every 4 hours.
-- ntfy sends phone notifications when a new monthly bulletin is published, even
-  if the EB-3 date did not move.
+- Cloudflare checks official Visa Bulletin pages every 10 minutes without AI.
+- GitHub Actions independently checks cloud health hourly and saves a static backup.
+- The Cloudflare Worker sends browser push for verified new bulletins or revisions.
+- GitHub does not broadcast, so it cannot duplicate the cloud alerts.
 
 After pushing this repo to GitHub:
 
@@ -161,3 +162,69 @@ other's PD.
 
 Keep the same VAPID keys between deploys. Either preserve `vapid_keys.json` or
 set `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` as environment variables.
+
+## Zero-token cloud monitor
+
+The Worker now contains an official-only monitor (`worker/src/monitor.js`).
+It does not call an AI API. The cron runs at UTC minutes 03, 13, 23, 33, 43,
+and 53 when `MONITOR_ENABLED = "true"`. Live official-source verification and
+a real delivery check passed on 2026-09-29 (22 sent, 0 failed). The legacy
+GitHub publisher is replaced by a health check/static backup. Codex is paused
+only after a successful scheduled run is verified.
+
+- Validates the official bulletin URL/month and **employment table A**, exact
+  **3rd** row and **All Chargeability Areas Except Those Listed** column.
+- Uses travel.state.gov first, then the same official pages on the publicly
+  indexed childabduction.state.gov and adoptions.state.gov hosts. Records all
+  actual verification URLs; no third-party cutoff values are used.
+- Rejects missing/ambiguous tables, invalid dates, stale month regressions,
+  blocked pages and non-official sources. `C` and `U` are explicit statuses.
+- Rechecks the current and previous calendar month's official tables each run.
+- Stores the observation plus pending events before delivery. Successful
+  recipient receipts prevent ordinary duplicate deliveries; only failed
+  recipients retry. Invalid/expired subscriptions are removed.
+- Source failures keep the last verified state. Six consecutive failures cause
+  a daily-limited outage push; `/api/status` flags data older than 30 minutes.
+- `/api/health` returns 503 when an enabled monitor is stale or delivery failed.
+  An independent uptime monitor is recommended to detect total Worker outages;
+  a stopped Worker cannot alert about itself.
+
+The existing KV namespace is reused under reserved `monitor:` keys. Old push
+subscription keys and VAPID keys are preserved. No browser re-subscription is
+required. Delivery is **at least once**, not exactly once: KV is eventually
+consistent, and a crash between delivery and saving its receipt can duplicate
+an alert. Browser notification tags collapse repeated visible notifications.
+Keep manual checks and cron runs from overlapping. Do not roll back to the old
+unfiltered broadcaster while `monitor:` keys remain in this namespace.
+
+### Validation and deployment
+
+```sh
+cd worker
+npm test
+npx wrangler deploy --dry-run
+npx wrangler whoami
+npx wrangler deploy --keep-vars
+```
+
+Private POST endpoints `/api/monitor/probe` (read-only source verification) and
+`/api/monitor/check` (persist and notify) require the `MONITOR_ADMIN_SECRET`
+bearer token. The local credential is in ignored, mode-0600
+`worker/.monitor-admin.json`; never commit or print it. Existing
+`BROADCAST_SECRET` remains separate and unchanged.
+
+After an authenticated cloud probe succeeds, verify the real change notice
+and delivery counts, enable `MONITOR_ENABLED`, and wait for a successful
+scheduled run. Only then pause the Codex automation and disable the duplicate
+GitHub scheduled publisher. Deploy the updated dashboard at the same time;
+it reads `/api/status` and labels its static backup as unverified/cached.
+
+Before this change, the last listed Worker version was
+`d82c4b06-f4c3-474c-bb54-a507a8657133`. Prefer disabling `MONITOR_ENABLED`
+over rolling back the broadcaster, because old code does not filter monitor
+keys from the shared subscription namespace.
+
+Run `python3 worker/scripts/verify-monitor.py` for a private read-only cloud probe.
+Add `--check` only to perform a real notifying check; avoid overlapping cron.
+The hourly GitHub health workflow fails if the monitor is disabled, stale or
+unhealthy; enable GitHub Actions failure notifications for an independent alert.

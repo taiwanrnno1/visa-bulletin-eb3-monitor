@@ -4,31 +4,31 @@ on:
   schedule:
     - cron: "17 * * * *"
   workflow_dispatch:
+  push:
+    paths:
+      - 'sync_cloud_state.py'
+      - '.github/workflows/check-visa-bulletin.yml'
 
 permissions:
   contents: write
 
+concurrency:
+  group: visa-bulletin-static-backup
+  cancel-in-progress: false
+
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Run monitor tests
-        run: python -m unittest -v test_visa_bulletin_watch.py
-
-      - name: Check Google Groups and Visa Bulletin data
-        env:
-          WORKER_BROADCAST_URL: ${{ secrets.WORKER_BROADCAST_URL }}
-          WORKER_BROADCAST_SECRET: ${{ secrets.WORKER_BROADCAST_SECRET }}
-        run: python github_action_check.py
-
+      - name: Check cloud monitor health and sync verified backup
+        run: python sync_cloud_state.py
       - name: Commit updated bulletin state
         run: |
           if git diff --quiet -- visa_bulletin_state.json; then
@@ -38,5 +38,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add visa_bulletin_state.json
-          git commit -m "Update Visa Bulletin state"
+          git commit -m "Update verified Visa Bulletin backup"
           git push

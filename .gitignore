@@ -6,3 +6,7 @@ __pycache__/
 worker/node_modules/
 .DS_Store
 worker/.DS_Store
+
+.wrangler/
+worker/.wrangler/
+worker/.monitor-admin.json

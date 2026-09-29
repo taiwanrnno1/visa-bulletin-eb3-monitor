@@ -1,4 +1,4 @@
-const CHECK_INTERVAL_MS = 60 * 60 * 1000;
+const CHECK_INTERVAL_MS = 10 * 60 * 1000;
 const PD_STORAGE_KEY = "visaBulletinEb3PriorityDate";
 const RECEIPT_STORAGE_KEY = "heimiCaseReceiptNumber";
 const RECEIPT_PRIVACY_RESET_KEY = "heimiCaseReceiptPrivacyResetV1";
@@ -885,6 +885,20 @@ async function loadStatus() {
 }
 
 async function loadStaticStatus() {
+  try {
+    const response = await fetch(`${pushWorkerBase()}/api/status`, {signal: AbortSignal.timeout(10000)});
+    if (!response.ok) throw new Error("監測服務暫時無法讀取");
+    const payload = await response.json();
+    if (!payload.ok || !payload.state?.official_verified) throw new Error("尚無官方確認資料");
+    renderState(payload.state);
+    els.noticeText.textContent = payload.stale
+      ? "官方資料暫時無法更新；目前顯示上次確認的排期，系統會繼續重試。"
+      : "每十分鐘核對官方公告；有確認的變更才推播。";
+    setStatus(payload.stale ? "資料待更新" : "官方已核對", payload.stale ? "idle" : "success");
+    return;
+  } catch {
+    // Preserve the existing dashboard during staged rollout or service outages.
+  }
   const stateUrl = new URL("../visa_bulletin_state.json", window.location.href);
   stateUrl.searchParams.set("v", Date.now().toString());
   let current;
@@ -896,7 +910,7 @@ async function loadStaticStatus() {
     current = loadInitialState();
   }
   renderState(current);
-  els.noticeText.textContent = "🐱 目前可查看最新資料與儲存自己的 PD。黑咪會持續巡邏喵～";
+  els.noticeText.textContent = "目前顯示備存資料，尚未取得雲端官方確認結果；請留意資料日期。";
   setStatus("網頁版", "idle");
 }
 
@@ -912,7 +926,7 @@ async function checkNow({ notifyBrowser = true } = {}) {
   if (state.checking) return;
   if (!state.backendAvailable) {
     await loadStatus();
-    els.noticeText.textContent = "🐾 GitHub Pages 免費版無法即時執行後台檢查；最新資料會由自動流程更新到這個頁面。";
+
     return;
   }
   state.checking = true;

@@ -1,6 +1,11 @@
+import { runMonitor, readOfficial, STATE_KEY } from './monitor.js';
 const encoder = new TextEncoder();
 
 export default {
+  async scheduled(controller, env, ctx) {
+    if (env.MONITOR_ENABLED !== 'true') return;
+    ctx.waitUntil(runMonitor(env, event => deliverMonitorEvent(event, env)));
+  },
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
       return new Response(null, { headers: corsHeaders(env, request) });
@@ -20,8 +25,27 @@ export default {
       if (url.pathname === "/api/test" && request.method === "POST") {
         return testPush(request, env);
       }
+      if (url.pathname === "/api/status" && request.method === "GET") {
+        const saved = await env.PUSH_SUBSCRIPTIONS.get(STATE_KEY, "json");
+        const health = await env.PUSH_SUBSCRIPTIONS.get("monitor:health", "json");
+        const stale = !health?.last_success || Date.now() - Date.parse(health.last_success) > 30 * 60000;
+        return json({ok: Boolean(saved?.current), state:saved?.current || null, health, stale}, env, 200, request);
+      }
+      if (url.pathname === "/api/monitor/probe" && request.method === "POST") {
+        if (!await authorized(request, env, "MONITOR_ADMIN_SECRET")) return json({ok:false,error:"Unauthorized"}, env, 401, request);
+        return json({ok:true,state:await readOfficial(null)}, env, 200, request);
+      }
+      if (url.pathname === "/api/monitor/check" && request.method === "POST") {
+        if (!await authorized(request, env, "MONITOR_ADMIN_SECRET")) return json({ok:false,error:"Unauthorized"}, env, 401, request);
+        const result = await runMonitor(env, event => deliverMonitorEvent(event, env));
+        return json({ok:result.ok, health:{last_success:result.last_success,last_error:result.last_error}, delivery:result.delivery}, env, result.ok ? 200 : 503, request);
+      }
       if (url.pathname === "/api/health" && request.method === "GET") {
-        return json({ ok: true }, env);
+        const health = await env.PUSH_SUBSCRIPTIONS.get("monitor:health", "json");
+        const enabled = env.MONITOR_ENABLED === "true";
+        const fresh = Boolean(health?.last_success) && Date.now() - Date.parse(health.last_success) <= 30 * 60000;
+        const ok = !enabled || (fresh && !health?.delivery?.failed);
+        return json({ok, monitor_enabled:enabled, healthy:enabled && ok, health}, env, ok ? 200 : 503, request);
       }
       return json({ ok: false, error: "Not found" }, env, 404, request);
     } catch (error) {
@@ -84,8 +108,7 @@ async function subscribe(request, env) {
 }
 
 async function broadcast(request, env) {
-  const auth = request.headers.get("Authorization") || "";
-  if (!env.BROADCAST_SECRET || auth !== `Bearer ${env.BROADCAST_SECRET}`) {
+  if (!await authorized(request, env)) {
     return json({ ok: false, error: "Unauthorized" }, env, 401);
   }
 
@@ -107,8 +130,7 @@ async function broadcast(request, env) {
 }
 
 async function testPush(request, env) {
-  const auth = request.headers.get("Authorization") || "";
-  if (!env.BROADCAST_SECRET || auth !== `Bearer ${env.BROADCAST_SECRET}`) {
+  if (!await authorized(request, env)) {
     return json({ ok: false, error: "Unauthorized" }, env, 401);
   }
 
@@ -128,8 +150,9 @@ async function sendToAll(message, env) {
   let failed = 0;
   do {
     const listed = await env.PUSH_SUBSCRIPTIONS.list({ cursor });
-    cursor = listed.cursor;
+    cursor = listed.list_complete ? undefined : listed.cursor;
     await Promise.all(listed.keys.map(async (item) => {
+      if (item.name.startsWith("monitor:")) return;
       const raw = await env.PUSH_SUBSCRIPTIONS.get(item.name);
       if (!raw) return;
       const subscription = JSON.parse(raw);
@@ -162,6 +185,7 @@ async function sendWebPush(subscription, payload, env) {
       "TTL": "2419200",
       "Urgency": "normal",
     },
+    signal: AbortSignal.timeout(15000),
     body: encrypted,
   });
 
@@ -285,4 +309,37 @@ function concatBytes(...parts) {
     offset += part.length;
   }
   return output;
+}
+
+async function authorized(request, env, key = "BROADCAST_SECRET") {
+  if (!env[key]) return false;
+  const supplied = await crypto.subtle.digest("SHA-256", encoder.encode(request.headers.get("Authorization") || ""));
+  const expected = await crypto.subtle.digest("SHA-256", encoder.encode(`Bearer ${env[key]}`));
+  return crypto.subtle.timingSafeEqual(supplied, expected);
+}
+
+export async function deliverMonitorEvent(event, env, send = sendWebPush) {
+  let cursor, sent = 0, failed = 0, skipped = 0;
+  do {
+    const listed = await env.PUSH_SUBSCRIPTIONS.list({cursor, limit:100});
+    cursor = listed.list_complete ? undefined : listed.cursor;
+    // Sequential sends bound memory and preserve individual retry receipts.
+    for (const item of listed.keys) {
+      if (item.name.startsWith('monitor:')) continue;
+      const receipt = `monitor:receipt:${event.id}:${item.name}`;
+      if (await env.PUSH_SUBSCRIPTIONS.get(receipt)) { skipped++; continue; }
+      try {
+        const subscription = await env.PUSH_SUBSCRIPTIONS.get(item.name, 'json');
+        if (!subscription?.endpoint || !subscription?.keys) continue;
+        const result = await send(subscription, event, env);
+        if (result.ok) {
+          await env.PUSH_SUBSCRIPTIONS.put(receipt, '1', {expirationTtl:7776000});
+          sent++;
+        } else if (result.remove) {
+          await env.PUSH_SUBSCRIPTIONS.delete(item.name);
+        } else { failed++; }
+      } catch { failed++; }
+    }
+  } while (cursor);
+  return {sent, failed, skipped};
 }

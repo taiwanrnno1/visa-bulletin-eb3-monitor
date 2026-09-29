@@ -5,7 +5,8 @@
   "scripts": {
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
-    "generate:vapid": "node scripts/generate-vapid.mjs"
+    "generate:vapid": "node scripts/generate-vapid.mjs",
+    "test": "node --test test/*.test.js"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"

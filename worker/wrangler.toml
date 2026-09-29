@@ -6,7 +6,15 @@ kv_namespaces = [
   { binding = "PUSH_SUBSCRIPTIONS", id = "31254d8da7a24e8986b360a48a051995" }
 ]
 
+[triggers]
+crons = ["3-59/10 * * * *"]
+
+[observability]
+enabled = true
+
 [vars]
+# Official fetch and real delivery verified before enabling.
+MONITOR_ENABLED = "true"
 ALLOWED_ORIGIN = "https://taiwanrnno1.github.io"
 SITE_URL = "https://taiwanrnno1.github.io/visa-bulletin-eb3-monitor/"
 VAPID_PUBLIC_KEY = "BKz58cBwM4HV8J8uIseGZQWj6Myw-bmuYkvYulT38R0jWZAkbUqKUujyRPTKfpmEWHlgHApkeWdj3dgx9DAO2ec"
