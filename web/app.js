@@ -748,18 +748,14 @@ function renderState(current, { celebrate = false } = {}) {
   if (!current) return;
   state.current = current;
   els.dateValue.textContent = current.eb3_all_chargeability_final_action_date || "--";
-  const verifiedSource = current.official_verified && current.verification_sources?.[1];
-  const displaySource = verifiedSource || current.source_url;
-  if (displaySource) {
-    els.dateValue.href = displaySource;
-    els.sourceLink.href = displaySource;
-    els.sourceLink.textContent = verifiedSource && current.source_url && new URL(verifiedSource).hostname !== new URL(current.source_url).hostname
-      ? "國務院官方備援來源 ↗" : "官方來源 ↗";
+  if (current.source_url) {
+    els.dateValue.href = current.source_url;
+    els.sourceLink.href = current.source_url;
+    els.sourceLink.textContent = "國務院官方公告 ↗";
   }
   els.movementValue.textContent = current.movement_from_previous_bulletin?.label || "--";
   if (current.previous_bulletin_source_url) {
-    els.previousSourceLink.href = current.official_verified && current.verification_sources?.[2]
-      ? current.verification_sources[2] : current.previous_bulletin_source_url;
+    els.previousSourceLink.href = current.previous_bulletin_source_url;
     const previousValue = current.previous_bulletin_eb3_all_chargeability_final_action_date;
     const previousDate = current.year && current.month
       ? new Date(Date.UTC(current.year, current.month - 2, 1)) : null;
