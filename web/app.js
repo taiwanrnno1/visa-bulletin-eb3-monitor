@@ -62,8 +62,6 @@ const els = {
   openCaseStatus: document.querySelector("#openCaseStatus"),
   caseNote: document.querySelector("#caseNote"),
   progressBadge: document.querySelector("#progressBadge"),
-  waitProgressFill: document.querySelector("#waitProgressFill"),
-  progressCat: document.querySelector("#progressCat"),
   waitedDays: document.querySelector("#waitedDays"),
   gapDays: document.querySelector("#gapDays"),
   progressText: document.querySelector("#progressText"),
@@ -166,15 +164,21 @@ function parseVisaDate(value) {
     const fullYear = year < 70 ? 2000 + year : 1900 + year;
     const month = monthMap[bulletin[2]];
     if (month === undefined) return null;
-    return new Date(Date.UTC(fullYear, month, Number(bulletin[1])));
+    return validUtcDate(fullYear, month, Number(bulletin[1]));
   }
 
   const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (iso) {
-    return new Date(Date.UTC(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3])));
+    return validUtcDate(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
   }
 
   return null;
+}
+
+function validUtcDate(year, month, day) {
+  const date = new Date(Date.UTC(year, month, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month && date.getUTCDate() === day
+    ? date : null;
 }
 
 function toIsoDate(date) {
@@ -475,41 +479,40 @@ function renderShareCard(current) {
 }
 
 function renderProgressCard() {
-  if (!els.waitProgressFill) return;
+  if (!els.progressBadge) return;
   const pdDate = parseVisaDate(els.pdInput.value);
   const cutoffDate = parseVisaDate(state.current?.eb3_all_chargeability_final_action_date);
-  const today = getTodayUtc();
 
   if (!pdDate || !cutoffDate) {
-    els.progressBadge.textContent = "尚未輸入 PD";
-    els.waitProgressFill.style.width = "8%";
-    els.progressCat.style.left = "8%";
-    els.waitedDays.textContent = "已等待：--";
-    els.gapDays.textContent = "距離本月：--";
-    els.progressText.textContent = "輸入 Priority Date 後，黑咪會幫你估算等待時間與離本月公布日期還差多久喵～";
+    els.progressBadge.textContent = els.pdInput.value.trim() && !pdDate ? "PD 日期無效" : "尚未輸入 PD";
+    els.waitedDays.textContent = "PD 距今：--";
+    els.gapDays.textContent = "與截止日相差：--";
+    els.progressText.textContent = els.pdInput.value.trim() && !pdDate
+      ? "請輸入有效日期，例如 01AUG24 或 2024-08-01。"
+      : "輸入 PD 後，顯示它與本月表 A 截止日的差距；這不是等待時間預測。";
     return;
   }
 
-  const waited = Math.max(0, daysBetween(pdDate, today));
-  const diffToCutoff = daysBetween(cutoffDate, pdDate);
-  if (diffToCutoff <= 0) {
-    els.progressBadge.textContent = "本月已到或已超過";
-    els.waitProgressFill.style.width = "100%";
-    els.progressCat.style.left = "96%";
-    els.waitedDays.textContent = `已等待：${formatDuration(waited)}`;
-    els.gapDays.textContent = "距離本月：已到達";
-    els.progressText.textContent = "黑咪敲碗！你的 Priority Date 已經早於或等於本月公布日期，請搭配官方指引與律師確認下一步喵～";
+  const elapsed = daysBetween(pdDate, getTodayUtc());
+  els.waitedDays.textContent = elapsed >= 0
+    ? `PD 距今：${elapsed} 天`
+    : "PD 日期在今天之後";
+  const daysEarlier = daysBetween(pdDate, cutoffDate);
+  if (daysEarlier > 0) {
+    els.progressBadge.textContent = "PD 早於截止日";
+    els.gapDays.textContent = `早於截止日：${daysEarlier} 天`;
+    els.progressText.textContent = "按本月表 A 日期比較，你的 PD 早於截止日；實際案件進度仍以官方通知為準。";
     return;
   }
-
-  const roughTotal = Math.max(1, waited + diffToCutoff);
-  const percent = Math.max(6, Math.min(96, Math.round((waited / roughTotal) * 100)));
-  els.progressBadge.textContent = `${percent}% 旅程感`;
-  els.waitProgressFill.style.width = `${percent}%`;
-  els.progressCat.style.left = `${percent}%`;
-  els.waitedDays.textContent = `已等待：約 ${formatDuration(waited)}`;
-  els.gapDays.textContent = `距離本月：${formatDuration(diffToCutoff)}`;
-  els.progressText.textContent = "這是黑咪用目前公布日期估算的等待旅程感，不是官方預測；但很適合每月追蹤自己的距離喵～";
+  if (daysEarlier === 0) {
+    els.progressBadge.textContent = "PD 等於截止日";
+    els.gapDays.textContent = "與截止日相差：0 天";
+    els.progressText.textContent = "官方規則要求 PD 早於截止日；兩者相同時，請核對當月官方指引。";
+    return;
+  }
+  els.progressBadge.textContent = "PD 晚於截止日";
+  els.gapDays.textContent = `晚於截止日：${Math.abs(daysEarlier)} 天`;
+  els.progressText.textContent = "這是日期差距，不代表還需要等待的時間。";
 }
 
 function renderHistoryChart(current) {
@@ -659,7 +662,7 @@ function buildPdMessage() {
   const pdDate = parseVisaDate(pdText);
   const cutoffDate = parseVisaDate(cutoffText);
   if (!pdDate) {
-    return "PD 格式看不懂，請用 01AUG24 或 2024-08-01。";
+    return "PD 日期無效，請用 01AUG24 或 2024-08-01。";
   }
   if (!cutoffDate) {
     return "目前公布值不是日期，暫時無法計算差距。";
@@ -667,12 +670,12 @@ function buildPdMessage() {
 
   const diffDays = Math.round((cutoffDate - pdDate) / 86400000);
   if (diffDays > 0) {
-    return `🐾 你的 PD 已早於最新公布日期 ${cutoffText}，排期看起來已經到了。恭喜喵～這一步很不容易。`;
+    return `🐾 你的 PD 已早於表 A 截止日 ${cutoffText}，排期看起來已經到了。恭喜喵～這一步很不容易。`;
   }
   if (diffDays === 0) {
-    return `📅 你的 PD 剛好等於最新公布日期 ${cutoffText}。官方文字通常要求早於公布日期，建議再確認當月指引喵～`;
+    return `📅 你的 PD 剛好等於表 A 截止日 ${cutoffText}。官方規則要求早於截止日，建議再確認當月指引喵～`;
   }
-  return `🐾 你的 PD 距離最新公布日期 ${cutoffText} 還差 ${formatDuration(diffDays)}。黑咪陪你繼續盯著喵～`;
+  return `🐾 你的 PD 晚於表 A 截止日 ${cutoffText} ${Math.abs(diffDays)} 天；這只是日期差距，不能推算等待時間。黑咪陪你繼續盯著喵～`;
 }
 
 function updatePdResult() {
@@ -745,15 +748,24 @@ function renderState(current, { celebrate = false } = {}) {
   if (!current) return;
   state.current = current;
   els.dateValue.textContent = current.eb3_all_chargeability_final_action_date || "--";
-  if (current.source_url) {
-    els.dateValue.href = current.source_url;
-    els.sourceLink.href = current.source_url;
+  const verifiedSource = current.official_verified && current.verification_sources?.[1];
+  const displaySource = verifiedSource || current.source_url;
+  if (displaySource) {
+    els.dateValue.href = displaySource;
+    els.sourceLink.href = displaySource;
+    els.sourceLink.textContent = verifiedSource && current.source_url && new URL(verifiedSource).hostname !== new URL(current.source_url).hostname
+      ? "國務院官方備援來源 ↗" : "官方來源 ↗";
   }
   els.movementValue.textContent = current.movement_from_previous_bulletin?.label || "--";
   if (current.previous_bulletin_source_url) {
-    els.previousSourceLink.href = current.previous_bulletin_source_url;
+    els.previousSourceLink.href = current.official_verified && current.verification_sources?.[2]
+      ? current.verification_sources[2] : current.previous_bulletin_source_url;
     const previousValue = current.previous_bulletin_eb3_all_chargeability_final_action_date;
-    const previousLabel = current.previous_bulletin || "上個月公告";
+    const previousDate = current.year && current.month
+      ? new Date(Date.UTC(current.year, current.month - 2, 1)) : null;
+    const previousLabel = previousDate
+      ? `${previousDate.getUTCFullYear()} 年 ${previousDate.getUTCMonth() + 1} 月公告`
+      : current.previous_bulletin || "上個月公告";
     els.previousSourceLink.textContent = previousValue
       ? `上月：${previousValue} · ${previousLabel}`
       : `比較基準：${previousLabel}`;
@@ -761,7 +773,9 @@ function renderState(current, { celebrate = false } = {}) {
   } else {
     els.previousSourceLink.hidden = true;
   }
-  els.bulletinValue.textContent = current.bulletin || "--";
+  els.bulletinValue.textContent = current.year && current.month
+    ? `${current.year} 年 ${current.month} 月公告`
+    : current.bulletin || "--";
   renderMood(current.movement_from_previous_bulletin, celebrate);
   updatePdResult();
   renderProgressCard();
@@ -1015,6 +1029,12 @@ document.addEventListener("keydown", (event) => {
 });
 els.pdForm.addEventListener("submit", (event) => {
   event.preventDefault();
+  if (els.pdInput.value.trim() && !parseVisaDate(els.pdInput.value)) {
+    updatePdResult();
+    renderProgressCard();
+    els.pdInput.focus();
+    return;
+  }
   localStorage.setItem(PD_STORAGE_KEY, els.pdInput.value.trim());
   openPdModal(updatePdResult());
   renderProgressCard();
@@ -1023,14 +1043,8 @@ els.pdForm.addEventListener("submit", (event) => {
   });
 });
 els.pdInput.addEventListener("input", () => {
-  if (!els.pdInput.value.trim()) {
-    updatePdResult();
-    return;
-  }
-  if (parseVisaDate(els.pdInput.value)) {
-    updatePdResult();
-    renderProgressCard();
-  }
+  updatePdResult();
+  renderProgressCard();
 });
 els.pdInput.addEventListener("change", () => {
   const parsed = parseVisaDate(els.pdInput.value);

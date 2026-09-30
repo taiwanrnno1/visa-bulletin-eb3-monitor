@@ -65,6 +65,24 @@
         </div>
       </section>
 
+      <section class="snapshot">
+        <div class="metric primary">
+          <div class="metric-label-row">
+            <span class="label">📅 EB-3 表 A 截止日</span>
+            <a id="sourceLink" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">官方來源 🐾</a>
+          </div>
+          <div class="date-bulletin-row">
+            <a class="date-link" id="dateValue" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">--</a>
+            <span class="bulletin-name" id="bulletinValue">--</span>
+          </div>
+        </div>
+        <div class="metric movement">
+          <span class="label">📣 相較上個月</span>
+          <strong id="movementValue">--</strong>
+          <a class="mini-link" id="previousSourceLink" href="#" target="_blank" rel="noreferrer">比較基準：--</a>
+        </div>
+      </section>
+
       <section class="message-panel" id="messagePanel">
         <div>
           <p class="message-kicker" id="messageKicker">排期狀態</p>
@@ -86,29 +104,11 @@
         </div>
       </section>
 
-      <section class="snapshot">
-        <div class="metric primary">
-          <div class="metric-label-row">
-            <span class="label">📅 本月公布日期</span>
-            <a id="sourceLink" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">官方來源 🐾</a>
-          </div>
-          <div class="date-bulletin-row">
-            <a class="date-link" id="dateValue" href="https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html" target="_blank" rel="noreferrer">--</a>
-            <span class="bulletin-name" id="bulletinValue">--</span>
-          </div>
-        </div>
-        <div class="metric movement">
-          <span class="label">📣 相較上個月</span>
-          <strong id="movementValue">--</strong>
-          <a class="mini-link" id="previousSourceLink" href="#" target="_blank" rel="noreferrer">比較基準：--</a>
-        </div>
-      </section>
-
       <section class="pd-panel" aria-label="Priority Date 計算">
         <div>
           <p class="section-chip">🐾 Priority Date 小筆記</p>
           <h2>我的 PD</h2>
-          <p>輸入你的 Priority Date，黑咪會幫你算離最新公布日期還差多久喵～</p>
+          <p>輸入 Priority Date，對照最新的表 A 截止日。</p>
         </div>
         <form class="pd-form" id="pdForm">
           <label for="pdInput">Priority Date</label>
@@ -128,19 +128,15 @@
       <section class="tool-grid" aria-label="黑咪實用小工具">
         <article class="progress-card">
           <div class="tool-head">
-            <p class="section-chip">🐾 我的等待進度條</p>
+            <p class="section-chip">🐾 我的 PD 狀態</p>
             <span id="progressBadge">尚未輸入 PD</span>
           </div>
-          <h2>黑咪陪你一起倒數等排期 ❤</h2>
-          <div class="progress-track" aria-hidden="true">
-            <span id="waitProgressFill"></span>
-            <img id="progressCat" src="../assets/heimi-face-modal.png" alt="" />
-          </div>
+          <h2>本月截止日與我的 PD</h2>
           <div class="progress-stats">
-            <span id="waitedDays">已等待：--</span>
-            <span id="gapDays">距離本月：--</span>
+            <span id="waitedDays">PD 距今：--</span>
+            <span id="gapDays">與截止日相差：--</span>
           </div>
-          <p id="progressText">輸入 Priority Date 後，黑咪會幫你估算等待時間與離本月公布日期還差多久喵～</p>
+          <p id="progressText">輸入 PD 後，顯示它與本月表 A 截止日的差距；這不是等待時間預測。</p>
         </article>
 
         <article class="share-card" id="shareCard">
