@@ -115,6 +115,11 @@ async function broadcast(request, env) {
   const payload = await request.json();
   const notice = payload.notice || {};
   const current = notice.current || {};
+  // The cloud monitor is now the sole publisher of dated bulletin notices.
+  // Manual messages (without a bulletin source URL) still use this endpoint.
+  if (env.MONITOR_ENABLED === 'true' && current.source_url) {
+    return json({ok:true,sent:0,failed:0,suppressed:'cloud_monitor_is_authoritative'}, env);
+  }
   const message = {
     title: String(notice.title || "Visa Bulletin EB-3 更新"),
     body: String(notice.message || "新的 Visa Bulletin 已公布。"),

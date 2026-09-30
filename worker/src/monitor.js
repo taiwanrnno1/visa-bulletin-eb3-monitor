@@ -1,3 +1,4 @@
+import legacyHistory from './legacy-history.js';
 // No model calls: official HTML -> validated table cell -> durable change/outbox.
 export const INDEX_URL = 'https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html';
 export const STATE_KEY = 'monitor:state:v1';
@@ -106,8 +107,10 @@ export async function readOfficial(previous, fetcher = fetch) {
   const value = parseBulletin(await officialHtml(latest.source_url, fetcher, sources), latest);
   // Re-read the previous official bulletin so silent revisions are reflected too.
   const old = parseBulletin(await officialHtml(prior.source_url, fetcher, sources), prior);
-  const history = (previous?.history || []).filter(b => b.source_url !== latest.source_url && b.source_url !== prior.source_url);
-  history.push({...prior, eb3_all_chargeability_final_action_date:old}, {...latest, eb3_all_chargeability_final_action_date:value});
+  const merged = new Map(legacyHistory.map(b => [b.source_url,b]));
+  for (const b of previous?.history || []) merged.set(b.source_url,b);
+  const history = [...merged.values()].filter(b => b.year*12+b.month < latest.year*12+latest.month && b.source_url !== prior.source_url).sort((a,b)=>a.year*12+a.month-b.year*12-b.month);
+  history.push({...prior, verification:'official', eb3_all_chargeability_final_action_date:old}, {...latest, verification:'official', eb3_all_chargeability_final_action_date:value});
   return { ...latest, checked_at:new Date().toISOString(), official_verified:true, verification_sources:sources, data_source:'U.S. Department of State (official)', eb3_all_chargeability_final_action_date:value, previous_bulletin:prior.bulletin, previous_bulletin_source_url:prior.source_url, previous_bulletin_eb3_all_chargeability_final_action_date:old, movement_from_previous_bulletin:movement(old,value), history:history.slice(-24) };
 }
 export function eventFor(previous, current) {

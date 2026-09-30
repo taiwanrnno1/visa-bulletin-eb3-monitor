@@ -169,8 +169,7 @@ The Worker now contains an official-only monitor (`worker/src/monitor.js`).
 It does not call an AI API. The cron runs at UTC minutes 03, 13, 23, 33, 43,
 and 53 when `MONITOR_ENABLED = "true"`. Live official-source verification and
 a real delivery check passed on 2026-09-29 (22 sent, 0 failed). The legacy
-GitHub publisher is replaced by a health check/static backup. Codex is paused
-only after a successful scheduled run is verified.
+GitHub publisher is replaced by a health check/static backup. Codex was paused after successful scheduled runs were verified on 2026-09-30 UTC.
 
 - Validates the official bulletin URL/month and **employment table A**, exact
   **3rd** row and **All Chargeability Areas Except Those Listed** column.
@@ -228,3 +227,8 @@ Run `python3 worker/scripts/verify-monitor.py` for a private read-only cloud pro
 Add `--check` only to perform a real notifying check; avoid overlapping cron.
 The hourly GitHub health workflow fails if the monitor is disabled, stale or
 unhealthy; enable GitHub Actions failure notifications for an independent alert.
+
+Older chart history is retained in `worker/src/legacy-history.js` and marked
+`legacy_cached`; the current and previous month are reverified against official
+pages on every check. Dated legacy broadcasts are suppressed while the cloud
+monitor is enabled, preventing a second publisher from repeating alerts.
