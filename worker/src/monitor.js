@@ -92,8 +92,10 @@ async function fetchOfficialHtml(url, actual, fetcher, cached) {
   if (new URL(url).origin !== 'https://travel.state.gov') throw new Error('Non-official source rejected');
   const headers = { 'Accept': 'text/html', 'Cache-Control': 'no-cache', 'User-Agent': 'Mozilla/5.0 (compatible; VisaBulletinMonitor/2.0)' };
   // Ask the official server to revalidate; never treat a fetch failure as unchanged.
-  if (cached?.etag) headers['If-None-Match'] = cached.etag;
-  else if (cached?.modified) headers['If-Modified-Since'] = cached.modified;
+  // Apache's gzip-suffixed weak ETags on these pages do not yield 304.
+  // Its Last-Modified validator does, without changing representation semantics.
+  if (cached?.modified && (!cached.etag || cached.etag.startsWith('W/'))) headers['If-Modified-Since'] = cached.modified;
+  else if (cached?.etag) headers['If-None-Match'] = cached.etag;
   const response = await fetcher(actual, { redirect: 'manual', signal: AbortSignal.timeout(20000), headers });
   if (response.status === 304 && (cached?.etag || cached?.modified)) return {notModified:true};
   if (!response.ok) throw new Error(`Official source HTTP ${response.status}`);

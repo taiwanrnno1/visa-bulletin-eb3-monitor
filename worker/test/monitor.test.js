@@ -149,3 +149,16 @@ test('invalid revisions do not replace a previously validated cache',async()=>{
  await assert.rejects(()=>readOfficial(null,async()=>new Response('<html>Service temporarily unavailable</html>',{headers:{'content-type':'text/html',etag:'"invalid"'}}),cache));
  assert.deepEqual([...cache.data.entries()],before);
 });
+test('official gzip weak ETags use Last-Modified for reliable revalidation',async()=>{
+ const cache=new KV();const modified='Thu, 15 Oct 2026 20:22:15 GMT';let conditional=0;
+ const server=async(url,options)=>{
+  if(options.headers['If-Modified-Since']) {
+   assert.equal(options.headers['If-Modified-Since'],modified);
+   assert.equal(options.headers['If-None-Match'],undefined);
+   conditional++;return new Response(null,{status:304});
+  }
+  return new Response(url===INDEX_URL?index:page(url===link('september')?'September':'August'),{headers:{'content-type':'text/html',etag:'W/"version-gzip"','last-modified':modified}});
+ };
+ await readOfficial(null,server,cache);await readOfficial(null,server,cache);
+ assert.equal(conditional,3);
+});
