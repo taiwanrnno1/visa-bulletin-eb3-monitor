@@ -105,3 +105,47 @@ test('primary 403 falls back only to State Department hosts and records provenan
  assert.equal(result.verification_sources.length,3);
  assert.ok(result.verification_sources.every(u=>u.startsWith('https://childabduction.state.gov/')));
 });
+test('official validators reuse parsed data only after 304 and detect same-month revisions',async()=>{
+ const cache=new KV();let revision=false;let calls=0;
+ const server=async(url,options)=>{
+  calls++;
+  const etag=url===INDEX_URL?'"index"':revision?'"v2"':'"v1"';
+  if(options.headers['If-None-Match']===etag) return new Response(null,{status:304});
+  return new Response(url===INDEX_URL?index:page(url===link('september')?'September':'August',revision?'01AUG24':'01SEP24'),{headers:{'content-type':'text/html',etag}});
+ };
+ const first=await readOfficial(null,server,cache);
+ const second=await readOfficial(first,server,cache);
+ assert.equal(calls,6);assert.equal(second.eb3_all_chargeability_final_action_date,'01SEP24');
+ revision=true;
+ const revised=await readOfficial(second,server,cache);
+ assert.equal(revised.eb3_all_chargeability_final_action_date,'01AUG24');
+ await assert.rejects(()=>readOfficial(revised,async()=>new Response('',{status:503}),cache),/503/);
+ await assert.rejects(()=>readOfficial(null,async()=>new Response(null,{status:304}),new KV()),/304/);
+});
+test('section state survives intervening tables and still rejects duplicate final-action tables',()=>{
+ const original=page('September');
+ const extra='<table><tr><td>Unrelated explanatory table</td></tr></table>';
+ assert.equal(parseBulletin(original.replace('<table><tr><td>Employment-',extra+'<table><tr><td>Employment-'),latest),'01SEP24');
+ const employment=original.match(/<table><tr><td>Employment-[\s\S]*?<\/table>/)[0];
+ assert.throws(()=>parseBulletin(original.replace(employment,employment+employment),latest),/exactly one/);
+});
+test('validators are scoped to the official host that issued them',async()=>{
+ const cache=new KV();
+ const first=async url=>new Response(url===INDEX_URL?index:page(url===link('september')?'September':'August'),{headers:{'content-type':'text/html',etag:'"primary"'}});
+ await readOfficial(null,first,cache);
+ let mirrorCalls=0;
+ await readOfficial(null,async(url,options)=>{
+  if(url.startsWith('https://travel.state.gov')) return new Response('',{status:403});
+  mirrorCalls++;assert.equal(options.headers['If-None-Match'],undefined);
+  const canonical=url.replace('https://childabduction.state.gov','https://travel.state.gov');
+  return first(canonical);
+ },cache);
+ assert.equal(mirrorCalls,3);
+});
+test('invalid revisions do not replace a previously validated cache',async()=>{
+ const cache=new KV();
+ await readOfficial(null,async url=>new Response(url===INDEX_URL?index:page(url===link('september')?'September':'August'),{headers:{'content-type':'text/html',etag:'"valid"'}}),cache);
+ const before=[...cache.data.entries()];
+ await assert.rejects(()=>readOfficial(null,async()=>new Response('<html>Service temporarily unavailable</html>',{headers:{'content-type':'text/html',etag:'"invalid"'}}),cache));
+ assert.deepEqual([...cache.data.entries()],before);
+});

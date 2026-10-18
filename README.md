@@ -54,8 +54,9 @@ python3 visa_bulletin_watch.py --test-notification
 The free setup is:
 
 - GitHub Pages hosts the Chinese dashboard.
-- Cloudflare checks official Visa Bulletin pages every 10 minutes without AI.
+- Cloudflare checks official Visa Bulletin pages every 10 minutes without AI. Official ETag/Last-Modified revalidation avoids reparsing unchanged pages within the free CPU budget; network failures never count as unchanged. Changed pages still pass the complete month and EB-3 table validation.
 - GitHub Actions independently checks cloud health hourly and saves a static backup.
+- If no cloud check has completed for 30 minutes, the watchdog requests one authenticated recovery check. Configure the repository secret `MONITOR_ADMIN_SECRET` to match the Worker secret; never commit its value. Recent upstream or delivery failures still fail the health check with diagnostic details.
 - The Cloudflare Worker sends browser push for verified new bulletins or revisions.
 - GitHub does not broadcast, so it cannot duplicate the cloud alerts.
 

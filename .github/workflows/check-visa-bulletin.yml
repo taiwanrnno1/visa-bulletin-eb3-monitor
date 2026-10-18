@@ -28,6 +28,8 @@ jobs:
         with:
           python-version: "3.12"
       - name: Check cloud monitor health and sync verified backup
+        env:
+          MONITOR_ADMIN_SECRET: ${{ secrets.MONITOR_ADMIN_SECRET }}
         run: python sync_cloud_state.py
       - name: Commit updated bulletin state
         run: |
