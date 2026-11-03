@@ -1,4 +1,4 @@
-import { runMonitor, readOfficial, STATE_KEY } from './monitor.js';
+import { runMonitor, readOfficial, createBrowserReader, STATE_KEY } from './monitor.js';
 const encoder = new TextEncoder();
 
 export default {
@@ -33,7 +33,7 @@ export default {
       }
       if (url.pathname === "/api/monitor/probe" && request.method === "POST") {
         if (!await authorized(request, env, "MONITOR_ADMIN_SECRET")) return json({ok:false,error:"Unauthorized"}, env, 401, request);
-        return json({ok:true,state:await readOfficial(null)}, env, 200, request);
+        return json({ok:true,state:await readOfficial(null, fetch, null, createBrowserReader(env.BROWSER))}, env, 200, request);
       }
       if (url.pathname === "/api/monitor/check" && request.method === "POST") {
         if (!await authorized(request, env, "MONITOR_ADMIN_SECRET")) return json({ok:false,error:"Unauthorized"}, env, 401, request);

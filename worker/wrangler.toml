@@ -6,6 +6,9 @@ kv_namespaces = [
   { binding = "PUSH_SUBSCRIPTIONS", id = "31254d8da7a24e8986b360a48a051995" }
 ]
 
+[browser]
+binding = "BROWSER"
+
 [triggers]
 crons = ["3-59/10 * * * *"]
 

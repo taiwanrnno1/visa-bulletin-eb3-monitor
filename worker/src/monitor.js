@@ -68,10 +68,10 @@ export function parseBulletin(html, bulletin) {
   if (matches.length !== 1) throw new Error('Expected exactly one official EB-3 Final Action table');
   return matches[0];
 }
-async function officialDocument(url, parse, fetcher, sources, cache) {
+async function officialDocument(url, parse, fetcher, sources, cache, browserRead) {
   const cacheKey = `monitor:document:v2:${url}`;
   const cached = cache ? await cache.get(cacheKey, 'json') : null;
-  let lastError;
+  const errors = [];
   // Public State Department hosts serve the same canonical bulletin pages.
   for (const origin of ['https://travel.state.gov','https://childabduction.state.gov','https://adoptions.state.gov']) {
     try {
@@ -84,10 +84,55 @@ async function officialDocument(url, parse, fetcher, sources, cache) {
       }
       sources.push(actual);
       return value;
-    } catch(error) { lastError = error; }
+    } catch(error) { errors.push(`${new URL(origin).hostname}: ${error.message}`); }
   }
-  throw lastError;
+  if (browserRead) {
+    try {
+      // Render the canonical official page. A challenge/404 still fails parsing.
+      const value = parse(await browserRead(url));
+      sources.push(url);
+      return value;
+    } catch (error) { errors.push(`official browser: ${error.message}`); }
+  }
+  throw new Error(errors.join('; '));
 }
+
+export function createBrowserReader(browser, {sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), now = Date.now} = {}) {
+  if (!browser) return null;
+  // Request-local pacing for the free plan's one Quick Action per ten seconds.
+  let lastRequest = null;
+  return async url => {
+    if (new URL(url).origin !== 'https://travel.state.gov') throw new Error('Non-official browser source rejected');
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (lastRequest !== null) await sleep(Math.max(0, 11000 - (now() - lastRequest)));
+      lastRequest = now();
+      const response = await browser.quickAction('content', {
+        url, cacheTTL: 0,
+        gotoOptions: {waitUntil:'domcontentloaded', timeout:15000},
+        // The bulletin is server-rendered HTML; no scripts or third-party requests are needed.
+        rejectResourceTypes: ['image','stylesheet','font','media','script'],
+        allowRequestPattern: ['^https://travel\\.state\\.gov/'],
+      });
+      if (response.status === 429 && attempt === 0) {
+        const retryAfter = Number(response.headers.get('Retry-After') || 11);
+        await response.body?.cancel();
+        if (!Number.isFinite(retryAfter) || retryAfter > 20) throw new Error('Browser quota/rate limit reached');
+        await sleep(Math.max(11000, retryAfter * 1000));
+        continue;
+      }
+      if (!response.ok) {
+        await response.body?.cancel();
+        throw new Error(`Browser service HTTP ${response.status}`);
+      }
+      const payload = JSON.parse(await boundedText(response));
+      if (payload.success !== true || typeof payload.result !== 'string' || !payload.result.trim()) throw new Error('Browser returned no valid HTML');
+      console.log(JSON.stringify({event:'official_browser_fetch',url,browser_ms:Number(response.headers.get('X-Browser-Ms-Used') || 0)}));
+      return payload.result;
+    }
+    throw new Error('Browser rate limit reached');
+  };
+}
+
 async function fetchOfficialHtml(url, actual, fetcher, cached) {
   if (new URL(url).origin !== 'https://travel.state.gov') throw new Error('Non-official source rejected');
   const headers = { 'Accept': 'text/html', 'Cache-Control': 'no-cache', 'User-Agent': 'Mozilla/5.0 (compatible; VisaBulletinMonitor/2.0)' };
@@ -98,8 +143,15 @@ async function fetchOfficialHtml(url, actual, fetcher, cached) {
   else if (cached?.etag) headers['If-None-Match'] = cached.etag;
   const response = await fetcher(actual, { redirect: 'manual', signal: AbortSignal.timeout(20000), headers });
   if (response.status === 304 && (cached?.etag || cached?.modified)) return {notModified:true};
-  if (!response.ok) throw new Error(`Official source HTTP ${response.status}`);
+  if (!response.ok) {
+    const location = response.headers.get('location');
+    await response.body?.cancel();
+    throw new Error(`Official source HTTP ${response.status}${location ? ' -> ' + location : ''}`);
+  }
   if (!response.headers.get('content-type')?.includes('text/html')) throw new Error('Official source is not HTML');
+  return {html:await boundedText(response), etag:response.headers.get('etag'), modified:response.headers.get('last-modified')};
+}
+async function boundedText(response) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let size = 0, html = '';
@@ -111,20 +163,20 @@ async function fetchOfficialHtml(url, actual, fetcher, cached) {
       if (size > 2000000) throw new Error('Official page exceeds safe size');
       html += decoder.decode(value, { stream: true });
     }
-    return {html:html + decoder.decode(), etag:response.headers.get('etag'), modified:response.headers.get('last-modified')};
+    return html + decoder.decode();
   } finally { await reader.cancel(); }
 }
-export async function readOfficial(previous, fetcher = fetch, cache = null) {
+export async function readOfficial(previous, fetcher = fetch, cache = null, browserRead = null) {
   const sources = [];
-  const links = await officialDocument(INDEX_URL, parseIndex, fetcher, sources, cache);
+  const links = await officialDocument(INDEX_URL, parseIndex, fetcher, sources, cache, browserRead);
   const latest = links[0];
   if (previous && latest.year*12+latest.month < previous.year*12+previous.month) throw new Error('Official index moved backwards; retained verified state');
   const priorMonth = latest.month === 1 ? {year:latest.year-1,month:12} : {year:latest.year,month:latest.month-1};
   const prior = links.find(b => b.year === priorMonth.year && b.month === priorMonth.month);
   if (!prior) throw new Error('Previous calendar month missing from official index');
-  const value = await officialDocument(latest.source_url, html => parseBulletin(html, latest), fetcher, sources, cache);
+  const value = await officialDocument(latest.source_url, html => parseBulletin(html, latest), fetcher, sources, cache, browserRead);
   // Re-read the previous official bulletin so silent revisions are reflected too.
-  const old = await officialDocument(prior.source_url, html => parseBulletin(html, prior), fetcher, sources, cache);
+  const old = await officialDocument(prior.source_url, html => parseBulletin(html, prior), fetcher, sources, cache, browserRead);
   const merged = new Map(legacyHistory.map(b => [b.source_url,b]));
   for (const b of previous?.history || []) merged.set(b.source_url,b);
   const history = [...merged.values()].filter(b => b.year*12+b.month < latest.year*12+latest.month && b.source_url !== prior.source_url).sort((a,b)=>a.year*12+a.month-b.year*12-b.month);
@@ -145,7 +197,7 @@ export async function runMonitor(env, deliver, fetcher = fetch) {
   saved.pending = (await Promise.all(saved.pending.map(async e => await kv.get(`monitor:done:${e.id}`) ? null : e))).filter(Boolean);
   let fetchError;
   try {
-    const current = await readOfficial(saved.current, fetcher, kv);
+    const current = await readOfficial(saved.current, fetcher, kv, createBrowserReader(env.BROWSER));
     const event = eventFor(saved.current, current);
     if (event) saved.pending.push(event);
     saved.current = current;
@@ -155,7 +207,7 @@ export async function runMonitor(env, deliver, fetcher = fetch) {
   } catch (error) {
     fetchError = error;
     saved.failures += 1;
-    saved.last_error = String(error.message).slice(0,240);
+    saved.last_error = String(error.message).slice(0,1000);
     // A daily outage notice; never describe a failed fetch as no change.
     const day = new Date().toISOString().slice(0,10);
     if (saved.failures >= 6 && saved.alert_day !== day) {

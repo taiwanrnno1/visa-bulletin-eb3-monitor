@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {cutoff,parseIndex,parseBulletin,movement,eventFor,readOfficial,runMonitor,STATE_KEY,INDEX_URL} from '../src/monitor.js';
+import {cutoff,parseIndex,parseBulletin,movement,eventFor,readOfficial,runMonitor,createBrowserReader,STATE_KEY,INDEX_URL} from '../src/monitor.js';
 import {deliverMonitorEvent} from '../src/worker.js';
 const base='https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2026/';
 const link=(month)=>`${base}visa-bulletin-for-${month}-2026.html`;
@@ -19,6 +19,48 @@ class KV {
   async list(){return {keys:[...this.data.keys()].map(name=>({name})),list_complete:true};}
 }
 const fetcher=async url=>new Response(url===INDEX_URL?index:page(url===link('september')?'September':'August'),{headers:{'content-type':'text/html'}});
+test('blocked direct sources recover through fresh official browser HTML with paced requests',async()=>{
+ let now=0;const requests=[];
+ const reader=createBrowserReader({async quickAction(action,options){
+  requests.push({action,options,at:now});
+  const html=await (await fetcher(options.url)).text();
+  return Response.json({success:true,result:html});
+ }},{now:()=>now,sleep:async ms=>{now+=ms;}});
+ const blocked=async url=>url.startsWith('https://travel.state.gov')
+  ? new Response('',{status:403})
+  : new Response('',{status:302,headers:{location:'https://travel.state.gov/content/travel/en/404.html'}});
+ const result=await readOfficial(null,blocked,new KV(),reader);
+ assert.equal(result.official_verified,true);
+ assert.equal(result.eb3_all_chargeability_final_action_date,'01SEP24');
+ assert.deepEqual(result.verification_sources,[INDEX_URL,link('september'),link('august')]);
+ assert.deepEqual(requests.map(r=>r.at),[0,11000,22000]);
+ assert.ok(requests.every(r=>r.action==='content' && r.options.cacheTTL===0));
+ assert.ok(requests.every(r=>r.options.allowRequestPattern[0]==='^https://travel\\.state\\.gov/'));
+ assert.equal(eventFor(result,result),null);
+ await assert.rejects(()=>reader('https://evil.test/'),/Non-official/);
+});
+test('browser rate limits retry once, while challenge pages and exhausted quota fail closed',async()=>{
+ let calls=0,now=0;
+ const reader=createBrowserReader({async quickAction(){
+  calls++;
+  return calls===1 ? new Response('',{status:429,headers:{'Retry-After':'11'}}) : Response.json({success:true,result:'<title>Just a moment...</title>'});
+ }},{now:()=>now,sleep:async ms=>{now+=ms;}});
+ await assert.rejects(()=>readOfficial(null,async()=>new Response('',{status:403}),new KV(),reader),/official browser: Official index has no valid bulletin links/);
+ assert.equal(calls,2);assert.ok(now>=11000);
+ const exhausted=createBrowserReader({quickAction:async()=>new Response('',{status:429,headers:{'Retry-After':'86400'}})});
+ await assert.rejects(()=>exhausted(INDEX_URL),/quota/);
+});
+test('healthy direct fetches do not consume browser quota and all source failures remain diagnosable',async()=>{
+ let browserCalls=0;
+ await readOfficial(null,fetcher,new KV(),async()=>{browserCalls++;throw new Error('unneeded');});
+ assert.equal(browserCalls,0);
+ await assert.rejects(()=>readOfficial(null,async url=>url.startsWith('https://travel.state.gov')
+  ? new Response('',{status:403}) : new Response('',{status:302,headers:{location:'https://travel.state.gov/content/travel/en/404.html'}})),error=>{
+   assert.match(error.message,/travel.state.gov: Official source HTTP 403/);
+   assert.match(error.message,/adoptions.state.gov: Official source HTTP 302 -> https:\/\/travel.state.gov\/content\/travel\/en\/404.html/);
+   return true;
+  });
+});
 test('official links only, exact month/year URL',()=>{
  assert.equal(parseIndex(index+`<a href="https://evil.test/visa-bulletin-for-october-2026.html">Visa Bulletin For October 2026</a>`)[0].month,9);
  assert.throws(()=>parseIndex('<html>blocked</html>'));

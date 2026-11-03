@@ -55,6 +55,7 @@ The free setup is:
 
 - GitHub Pages hosts the Chinese dashboard.
 - Cloudflare checks official Visa Bulletin pages every 10 minutes without AI. Official ETag/Last-Modified revalidation avoids reparsing unchanged pages within the free CPU budget; network failures never count as unchanged. Changed pages still pass the complete month and EB-3 table validation.
+- When all direct official hosts fail, the Worker uses its `BROWSER` binding to read the canonical `travel.state.gov` pages through Cloudflare Browser Run. It disables browser-service caching, loads only official HTML, and applies the same index/month/table validation. Images, scripts, fonts and styles are blocked to reduce browser usage; requests are spaced 11 seconds apart for the free plan. This does not depend on a local computer, VPN, cookies or an AI model. Browser quotas and challenge pages remain errors, so unverified data never replaces the last verified bulletin. Source failures now include every host and redirect destination in the diagnostic message.
 - GitHub Actions independently checks cloud health hourly and saves a static backup.
 - If no cloud check has completed for 30 minutes, the watchdog requests one authenticated recovery check. Configure the repository secret `MONITOR_ADMIN_SECRET` to match the Worker secret; never commit its value. Recent upstream or delivery failures still fail the health check with diagnostic details.
 - The Cloudflare Worker sends browser push for verified new bulletins or revisions.
