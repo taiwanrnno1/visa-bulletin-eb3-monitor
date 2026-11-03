@@ -1,6 +1,6 @@
 {
   "bulletin": "Visa Bulletin For November 2026",
-  "checked_at": "2026-10-22T19:13:58.151Z",
+  "checked_at": "2026-11-03T00:19:06.629Z",
   "data_source": "U.S. Department of State (official)",
   "eb3_all_chargeability_final_action_date": "15JUN24",
   "history": [
@@ -210,9 +210,9 @@
   "previous_bulletin_source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2027/visa-bulletin-for-october-2026.html",
   "source_url": "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2027/visa-bulletin-for-november-2026.html",
   "verification_sources": [
-    "https://childabduction.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html",
-    "https://childabduction.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2027/visa-bulletin-for-november-2026.html",
-    "https://childabduction.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2027/visa-bulletin-for-october-2026.html"
+    "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html",
+    "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2027/visa-bulletin-for-november-2026.html",
+    "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2027/visa-bulletin-for-october-2026.html"
   ],
   "year": 2026
 }
